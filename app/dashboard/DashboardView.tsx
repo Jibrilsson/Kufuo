@@ -187,7 +187,7 @@ export function DashboardView({ user, signOutHref }: { user: { displayName: stri
   return (
     <main className="founder-app" dir={arabic ? "rtl" : "ltr"}>
       <header className="dash-topbar">
-        <a className="brand" href="/"><span className="brand-mark"><UsersRound size={20} /></span><span>Cofounders</span></a>
+        <a className="brand" href="/"><span className="brand-mark"><UsersRound size={20} /></span><span dir="ltr">Kufuo <b lang="ar">| كفو</b></span></a>
         <label className="dash-search"><Search size={17} /><span className="sr-only">{t.search}</span><input type="search" placeholder={t.search} /></label>
         <div className="dash-top-actions">
           <button className="language-button" type="button" onClick={() => setLanguage(arabic ? "en" : "ar")}><Languages size={18} /><span>{arabic ? "English" : "العربية"}</span></button>

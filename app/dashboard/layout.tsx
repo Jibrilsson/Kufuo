@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Founder dashboard — Cofounders",
+  title: "Founder dashboard — Kufuo | كفو",
   description: "Your personalized founder feed, matches, introductions, and community activity.",
 };
 

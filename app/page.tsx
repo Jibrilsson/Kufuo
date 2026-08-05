@@ -36,7 +36,7 @@ const content = {
     signIn: "Sign in",
     join: "Join the community",
     eyebrow: "Saudi-first. Arabic and English.",
-    heroTitle: "The right company starts with the right cofounder.",
+    heroTitle: "Find someone worthy of building with.",
     heroBody: "Meet serious builders, explore credible ideas, and test how you work together before making the commitment.",
     haveIdea: "I have an idea",
     joinIdea: "I want to join an idea",
@@ -118,7 +118,7 @@ const content = {
     signIn: "تسجيل الدخول",
     join: "انضم للمجتمع",
     eyebrow: "صُممت للسعودية. بالعربية والإنجليزية.",
-    heroTitle: "الشركة المناسبة تبدأ بالشريك المؤسس المناسب.",
+    heroTitle: "ابحث عن شخصٍ كفو لتبني معه.",
     heroBody: "تعرّف على أشخاص جادين، واكتشف أفكارًا واعدة، وجرّبوا العمل معًا قبل اتخاذ قرار الشراكة.",
     haveIdea: "لدي فكرة",
     joinIdea: "أريد الانضمام إلى فكرة",
@@ -238,7 +238,7 @@ export default function Home() {
   return (
     <main className="site-shell" dir={arabic ? "rtl" : "ltr"}>
       <header className="site-header">
-        <a className="brand" href="#top" aria-label="Cofounders home"><span className="brand-mark"><UsersRound size={20} /></span><span>Cofounders</span></a>
+        <a className="brand" href="#top" aria-label="Kufuo home"><span className="brand-mark"><UsersRound size={20} /></span><span dir="ltr">Kufuo <b lang="ar">| كفو</b></span></a>
         <nav className={`desktop-nav ${menuOpen ? "is-open" : ""}`} aria-label="Primary navigation">
           {t.nav.map((item, index) => <a key={item} href={["#discover", "#how", "#journey", "#community"][index]} onClick={() => setMenuOpen(false)}>{item}</a>)}
         </nav>
@@ -358,7 +358,7 @@ export default function Home() {
         </div>
       </section>
 
-      <footer className="site-footer section-frame"><div><a className="brand" href="#top"><span className="brand-mark"><UsersRound size={20} /></span><span>Cofounders</span></a><p>{t.footer}</p></div><nav><a href="#community">{arabic ? "الأمان" : "Safety"}</a><a href="#community">{arabic ? "المجتمع" : "Community"}</a><a href="#">{arabic ? "الخصوصية" : "Privacy"}</a><a href="#">{arabic ? "الشروط" : "Terms"}</a></nav><span>© 2026 Cofounders</span></footer>
+      <footer className="site-footer section-frame"><div><a className="brand" href="#top"><span className="brand-mark"><UsersRound size={20} /></span><span dir="ltr">Kufuo <b lang="ar">| كفو</b></span></a><p>{t.footer}</p></div><nav><a href="#community">{arabic ? "الأمان" : "Safety"}</a><a href="#community">{arabic ? "المجتمع" : "Community"}</a><a href="#">{arabic ? "الخصوصية" : "Privacy"}</a><a href="#">{arabic ? "الشروط" : "Terms"}</a></nav><span>© 2026 Kufuo | كفو</span></footer>
     </main>
   );
 }

@@ -173,7 +173,7 @@ export default function ProfilePage() {
   return (
     <main className="profile-page" dir={arabic ? "rtl" : "ltr"}>
       <header className="profile-header section-frame">
-        <a className="brand" href="/"><span className="brand-mark"><UsersRound size={20} /></span><span>Cofounders</span></a>
+        <a className="brand" href="/"><span className="brand-mark"><UsersRound size={20} /></span><span dir="ltr">Kufuo <b lang="ar">| كفو</b></span></a>
         <a className="profile-back" href="/#discover"><Back size={18} />{t.back}</a>
         <button className="language-button" type="button" onClick={() => setLanguage(arabic ? "en" : "ar")}><Languages size={18} /><span>{t.language}</span></button>
       </header>
@@ -215,7 +215,7 @@ export default function ProfilePage() {
         <div className="section-frame profile-sprint-inner"><div><p className="kicker kicker-inverse">{t.sprintKicker}</p><h2>{t.sprintTitle}</h2><p>{t.sprintBody}</p></div><button className="button button-inverse" type="button" onClick={() => { setPanelOpen(true); setSent(false); }}>{t.sprintAction}<Forward size={19} /></button></div>
       </section>
 
-      <footer className="profile-footer section-frame"><span><ShieldCheck size={17} />{t.safety}</span><a href="/">Cofounders © 2026</a></footer>
+      <footer className="profile-footer section-frame"><span><ShieldCheck size={17} />{t.safety}</span><a href="/">Kufuo | كفو © 2026</a></footer>
 
       {panelOpen && (
         <div className="intro-overlay" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setPanelOpen(false); }}>

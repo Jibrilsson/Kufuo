@@ -15,22 +15,22 @@ export async function generateMetadata(): Promise<Metadata> {
   const origin = `${protocol}://${host}`;
 
   return {
-    title: "Cofounders — Find the right person to build with",
+    title: "Kufuo | كفو — Find someone worthy of building with",
     description: "A Saudi-first community for finding compatible cofounders, joining credible startup ideas, and testing how you work together.",
-    applicationName: "Cofounders",
+    applicationName: "Kufuo | كفو",
     keywords: ["cofounder", "Saudi Arabia", "startups", "founders", "Arabic"],
     openGraph: {
-      title: "The right company starts with the right cofounder.",
+      title: "Find someone worthy of building with.",
       description: "Meet serious builders, explore credible ideas, and test how you work together before making the commitment.",
       type: "website",
-      siteName: "Cofounders",
-      images: [{ url: `${origin}/og.png`, width: 1200, height: 630, alt: "Cofounders social preview" }],
+      siteName: "Kufuo | كفو",
+      images: [{ url: `${origin}/og-kufuo.png`, width: 1200, height: 630, alt: "Kufuo — Find someone worthy of building with" }],
     },
     twitter: {
       card: "summary_large_image",
-      title: "The right company starts with the right cofounder.",
+      title: "Find someone worthy of building with.",
       description: "A Saudi-first community for people ready to build together.",
-      images: [`${origin}/og.png`],
+      images: [`${origin}/og-kufuo.png`],
     },
   };
 }

@@ -70,7 +70,7 @@ const copy = {
     authValue: "ChatGPT verified session",
     privacy: "Privacy",
     privacyValue: "Contact details remain private",
-    secure: "Cofounders never receives or stores your ChatGPT password.",
+    secure: "Kufuo never receives or stores your ChatGPT password.",
     preview: "Preview public profile",
     fields: { role: "Professional headline", location: "Location", availability: "Availability", intro: "Short introduction", about: "About you" },
   },
@@ -119,7 +119,7 @@ const copy = {
     authValue: "جلسة موثقة عبر ChatGPT",
     privacy: "الخصوصية",
     privacyValue: "تبقى بيانات التواصل خاصة",
-    secure: "لا تستلم منصة Cofounders كلمة مرور ChatGPT ولا تخزنها.",
+    secure: "لا تستلم منصة كفو كلمة مرور ChatGPT ولا تخزنها.",
     preview: "معاينة الملف العام",
     fields: { role: "العنوان المهني", location: "الموقع", availability: "التفرغ", intro: "مقدمة قصيرة", about: "نبذة عنك" },
   },
@@ -160,7 +160,7 @@ export function AccountView({ user, signOutHref }: { user: { displayName: string
   return (
     <main className="member-profile-page" dir={arabic ? "rtl" : "ltr"}>
       <header className="member-topbar">
-        <a className="brand" href="/"><span className="brand-mark"><UsersRound size={20} /></span><span>Cofounders</span></a>
+        <a className="brand" href="/"><span className="brand-mark"><UsersRound size={20} /></span><span dir="ltr">Kufuo <b lang="ar">| كفو</b></span></a>
         <nav><a href="/dashboard"><Compass size={17} />{t.dashboard}</a><a className="is-active" href="/account"><CircleUserRound size={17} />{t.profile}</a></nav>
         <div><button className="language-button" type="button" onClick={switchLanguage}><Languages size={18} /><span>{arabic ? "English" : "العربية"}</span></button><a className="account-signout" href={signOutHref}><LogOut size={17} />{t.signOut}</a></div>
       </header>

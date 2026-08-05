@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Your founder profile — Cofounders",
+  title: "Your founder profile — Kufuo | كفو",
   description: "Manage your founder identity, skills, interests, availability, and cofounder preferences.",
 };
 
