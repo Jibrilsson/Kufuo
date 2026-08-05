@@ -212,7 +212,7 @@ export default function Home() {
   const [path, setPath] = useState<"idea" | "skill" | null>(null);
   const [submitted, setSubmitted] = useState(false);
   const t = content[language];
-  const dashboardHref = process.env.NODE_ENV === "development" ? "/dashboard" : "/signin-with-chatgpt?return_to=%2Fdashboard";
+  const dashboardHref = "/login?returnTo=%2Fdashboard";
   const arabic = language === "ar";
   const l = arabic ? 1 : 0;
   const Arrow = arabic ? ArrowLeft : ArrowRight;
