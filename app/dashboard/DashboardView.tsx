@@ -206,7 +206,7 @@ export function DashboardView({ user, signOutHref }: { user: { displayName: stri
             <a href="/account">{t.completeProfile}<ChevronRight size={16} /></a>
           </section>
           <nav className="dash-nav" aria-label="Dashboard">
-            {t.nav.map((label, index) => { const Icon = navIcons[index]; const href = index === 0 ? "/dashboard" : index === 5 ? "/account" : `#${["feed", "discover", "messages", "connections", "notifications", "profile", "settings"][index]}`; return (
+            {t.nav.map((label, index) => { const Icon = navIcons[index]; const href = ["/dashboard", "/discover", "/messages", "/connections", "/notifications", "/account", "/settings"][index]; return (
               <a className={index === 0 ? "is-active" : ""} href={href} key={label}><Icon size={18} /><span>{label}</span>{index === 4 && <b>2</b>}</a>
             ); })}
           </nav>
