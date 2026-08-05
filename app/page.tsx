@@ -264,7 +264,7 @@ export default function Home() {
   return (
     <main className="site-shell" dir={arabic ? "rtl" : "ltr"}>
       <header className="site-header">
-        <a className="brand" href="#top" aria-label="Kufuo home"><span className="brand-mark"><img src="/kufuo-mark-256.png" alt="" /></span><span dir="ltr">Kufuo <b lang="ar">| كفو</b></span></a>
+        <a className="brand" href="#top" aria-label="Kufuo home"><span className="brand-mark"><img src="/kufuo-logo.svg" alt="Kufuo" /></span></a>
         <nav className={`desktop-nav ${menuOpen ? "is-open" : ""}`} aria-label="Primary navigation">
           {t.nav.map((item, index) => <a key={item} href={["#discover", "#how", "#journey", "#community"][index]} onClick={() => setMenuOpen(false)}>{item}</a>)}
         </nav>
@@ -386,7 +386,7 @@ export default function Home() {
         </div>
       </section>
 
-      <footer className="site-footer section-frame"><div><a className="brand" href="#top"><span className="brand-mark"><img src="/kufuo-mark-256.png" alt="" /></span><span dir="ltr">Kufuo <b lang="ar">| كفو</b></span></a><p>{t.footer}</p></div><nav><a href="#community">{arabic ? "الأمان" : "Safety"}</a><a href="#community">{arabic ? "المجتمع" : "Community"}</a><a href="#">{arabic ? "الخصوصية" : "Privacy"}</a><a href="#">{arabic ? "الشروط" : "Terms"}</a></nav><span>© 2026 Kufuo | كفو</span></footer>
+      <footer className="site-footer section-frame"><div><a className="brand" href="#top" aria-label="Kufuo home"><span className="brand-mark"><img src="/kufuo-logo.svg" alt="Kufuo" /></span></a><p>{t.footer}</p></div><nav><a href="#community">{arabic ? "الأمان" : "Safety"}</a><a href="#community">{arabic ? "المجتمع" : "Community"}</a><a href="#">{arabic ? "الخصوصية" : "Privacy"}</a><a href="#">{arabic ? "الشروط" : "Terms"}</a></nav><span>© 2026 Kufuo | كفو</span></footer>
     </main>
   );
 }

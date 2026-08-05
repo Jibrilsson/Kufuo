@@ -185,7 +185,7 @@ export function LoginView() {
   return (
     <main className="auth-shell" dir={ar ? "rtl" : "ltr"}>
       <section className="auth-brand-panel">
-        <Link className="brand auth-brand" href="/" aria-label="Kufuo home"><span className="brand-mark"><img src="/kufuo-mark-256.png" alt="" /></span><span dir="ltr">Kufuo <b lang="ar">| كفو</b></span></Link>
+        <Link className="brand auth-brand" href="/" aria-label="Kufuo home"><span className="brand-mark"><img src="/kufuo-logo.svg" alt="Kufuo" /></span></Link>
         <div className="auth-brand-copy">
           <p className="eyebrow"><ShieldCheck size={16} />{ar ? "مجتمع مؤسسين موثوق" : "A trusted founder community"}</p>
           <h1>{t.subtitle}</h1>
@@ -204,7 +204,7 @@ export function LoginView() {
           <button className="language-button" type="button" onClick={() => setLanguage(ar ? "en" : "ar")}><Languages size={18} />{ar ? "English" : "العربية"}</button>
         </div>
         <div className="auth-card">
-          <div className="auth-heading"><span className="auth-logo"><img src="/kufuo-mark-256.png" alt="" /></span><h2>{t.title}</h2><p>{t.subtitle}</p></div>
+          <div className="auth-heading"><span className="auth-logo auth-logo-wide"><img src="/kufuo-logo.svg" alt="Kufuo" /></span><h2>{t.title}</h2><p>{t.subtitle}</p></div>
           <div className="auth-socials">
             <button className={!availability.google && !availability.loading ? "is-unavailable" : ""} type="button" onClick={() => social("google")} disabled={busy || availability.loading || !availability.google} title={!availability.google && !availability.loading ? t.setupRequired : undefined}><FaGoogle aria-hidden="true" />{t.google}</button>
             <button className={!availability.linkedin && !availability.loading ? "is-unavailable" : ""} type="button" onClick={() => social("linkedin_oidc")} disabled={busy || availability.loading || !availability.linkedin} title={!availability.linkedin && !availability.loading ? t.setupRequired : undefined}><FaLinkedin aria-hidden="true" />{t.linkedin}</button>

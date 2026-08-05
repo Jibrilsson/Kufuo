@@ -73,7 +73,7 @@ const pageCopy = {
 } as const;
 
 function Brand() {
-  return <a className="brand" href="/"><span className="brand-mark"><img src="/kufuo-mark-256.png" alt="" /></span><span dir="ltr">Kufuo <b lang="ar">| كفو</b></span></a>;
+  return <a className="brand" href="/" aria-label="Kufuo home"><span className="brand-mark"><img src="/kufuo-logo.svg" alt="Kufuo" /></span></a>;
 }
 
 export function MemberWorkspace({ mode, user, signOutHref }: { mode: Mode; user: { displayName: string; email: string }; signOutHref: string }) {

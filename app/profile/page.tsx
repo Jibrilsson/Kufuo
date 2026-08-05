@@ -173,7 +173,7 @@ export default function ProfilePage() {
   return (
     <main className="profile-page" dir={arabic ? "rtl" : "ltr"}>
       <header className="profile-header section-frame">
-        <a className="brand" href="/"><span className="brand-mark"><img src="/kufuo-mark-256.png" alt="" /></span><span dir="ltr">Kufuo <b lang="ar">| كفو</b></span></a>
+        <a className="brand" href="/" aria-label="Kufuo home"><span className="brand-mark"><img src="/kufuo-logo.svg" alt="Kufuo" /></span></a>
         <a className="profile-back" href="/#discover"><Back size={18} />{t.back}</a>
         <button className="language-button" type="button" onClick={() => setLanguage(arabic ? "en" : "ar")}><Languages size={18} /><span>{t.language}</span></button>
       </header>
