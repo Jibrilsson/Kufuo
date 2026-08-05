@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Your founder account — Cofounders",
-  description: "Manage your founder identity, complete your Founder Passport, and start meeting compatible cofounders.",
+  title: "Your founder profile — Cofounders",
+  description: "Manage your founder identity, skills, interests, availability, and cofounder preferences.",
 };
 
 export default function AccountLayout({ children }: Readonly<{ children: React.ReactNode }>) {

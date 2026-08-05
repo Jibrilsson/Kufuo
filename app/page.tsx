@@ -212,6 +212,7 @@ export default function Home() {
   const [path, setPath] = useState<"idea" | "skill" | null>(null);
   const [submitted, setSubmitted] = useState(false);
   const t = content[language];
+  const dashboardHref = process.env.NODE_ENV === "development" ? "/dashboard" : "/signin-with-chatgpt?return_to=%2Fdashboard";
   const arabic = language === "ar";
   const l = arabic ? 1 : 0;
   const Arrow = arabic ? ArrowLeft : ArrowRight;
@@ -243,8 +244,8 @@ export default function Home() {
         </nav>
         <div className="header-actions">
           <button className="language-button" type="button" onClick={() => setLanguage(arabic ? "en" : "ar")} aria-label={arabic ? "Switch to English" : "التبديل إلى العربية"}><Languages size={18} /><span>{arabic ? "English" : "العربية"}</span></button>
-          <a className="text-link header-sign-in" href="/signin-with-chatgpt?return_to=%2Faccount">{t.signIn}</a>
-          <a className="button button-small" href="/signin-with-chatgpt?return_to=%2Faccount">{t.join}</a>
+          <a className="text-link header-sign-in" href={dashboardHref}>{t.signIn}</a>
+          <a className="button button-small" href={dashboardHref}>{t.join}</a>
           <button className="menu-button" type="button" onClick={() => setMenuOpen((value) => !value)} aria-expanded={menuOpen} aria-label={menuOpen ? "Close navigation" : "Open navigation"}>{menuOpen ? <X size={22} /> : <Menu size={22} />}</button>
         </div>
       </header>
