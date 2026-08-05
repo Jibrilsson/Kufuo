@@ -1,54 +1,53 @@
-# Design QA — White dashboard refinement
+# Kufuo full-site design QA
 
-- Source visual truth: `/var/folders/yl/5748p6413bb1rxb3g5243m540000gn/T/TemporaryItems/NSIRD_screencaptureui_XDUt39/Screenshot 2026-08-05 at 1.14.35 PM.png`
-- Source pixels: 2636 × 1694
-- Intended implementation route: `http://localhost:3000/dashboard`
-- Intended desktop viewport: 1440 × 1000 CSS px at device scale factor 1
-- State: signed-in founder, English, “For you” feed selected
-- Implementation screenshot: unavailable
+## Visual truth
 
-## Full-view comparison evidence
-
-The source reference was opened at original resolution. It establishes an overwhelmingly white canvas, white cards and controls, light neutral borders, and black typography. The dashboard CSS was updated to follow that treatment. A browser-rendered implementation capture remains unavailable because the in-app browser’s administrator-enforced security policy could not be verified for the local preview.
-
-## Focused region comparison evidence
-
-Blocked. The planned focused comparisons were the header/search field, feed composer, feed cards and tags, and right-side recommendation cards.
-
-## Required fidelity surfaces
-
-- Fonts and typography: existing Cofounders typography retained; browser comparison blocked.
-- Spacing and layout rhythm: existing dashboard structure retained as requested; browser comparison blocked.
-- Colors and visual tokens: page, cards, inputs, icons and inactive controls changed to white; light grey is limited to borders and hover separation; green remains semantic status color.
-- Image quality and asset fidelity: existing founder photography retained unchanged.
-- Copy and content: unchanged.
+- Source references: `/Users/salahjibril/.codex/state/plugins/product-design/assets/kufuo-reference-grotesk-type-color-mobile.png`, `/Users/salahjibril/.codex/state/plugins/product-design/assets/kufuo-reference-monochrome-illustration-mobile.png`, `/Users/salahjibril/.codex/state/plugins/product-design/assets/kufuo-reference-color-illustration-detail.png`, and `/Users/salahjibril/.codex/state/plugins/product-design/assets/kufuo-reference-mobile-screen-system.png`.
+- Implementation evidence: `qa-dashboard-editorial-language-1280x720.png`, `qa-app-discover-1280x720.png`, `qa-app-account-1280x720.png`, plus browser-rendered `/login` and `/profile` inspection.
+- Browser viewport: 1280 × 720 CSS pixels, device scale factor 1.
+- Screenshot pixels: 1280 × 720. No density normalization required.
+- State: English desktop application; authenticated routes rendered with the production components and realistic member data in a temporary local QA harness. The harness was removed after capture.
 
 ## Findings
 
-- [P0] Browser-rendered evidence unavailable.
-  - Location: local `/dashboard` preview.
-  - Evidence: the source is available, but local browser inspection and capture were denied before comparison.
-  - Impact: the brighter palette cannot be visually certified at the required viewport.
-  - Fix: capture the local dashboard when browser access is available and compare the white/background balance directly.
+- No actionable P0/P1/P2 mismatches remain.
+- Typography: the product uses the existing Geist/Noto Sans Arabic stack with oversized grotesk headings, compact labels, and appropriate bilingual fallbacks. Hierarchy and wrapping match the reference direction.
+- Spacing and layout rhythm: application grids, sidebars, cards, tabs, and forms use a consistent graphic rhythm. Major surfaces use 2px black boundaries and deliberate hard-offset depth, with no blurred elevation.
+- Colors and tokens: white is the dominant canvas; near-black is the ink. Lime `#8DFF74` is reserved for action and selection, cyan for discovery/information, coral for attention/community, pink for collaboration, yellow for progress/achievement, and peach for editorial brand moments.
+- Image quality: supplied portraits, the Kufuo logo, and the generated founder illustration remain real assets. Interface icons use the existing Lucide icon library; there are no emoji or text-glyph substitutes.
+- Copy: existing English and Arabic product copy is preserved; the redesign does not leak implementation notes into the member experience.
+- Accessibility: visible focus styles are retained, controls keep labels, contrast is strong, and RTL remains supported.
 
-## Primary interactions tested
+## Interaction and responsive checks
 
-- Not re-tested in browser because the change is scoped to CSS and local preview inspection is blocked.
-- The production build completed successfully with all dashboard and profile routes.
+- Verified page rendering for landing, login, public profile, dashboard, discover, and account/profile.
+- Verified protected-route redirect to `/login?returnTo=%2Fdashboard` when unauthenticated.
+- Verified interactive controls remain present for language switching, posting, feed tabs, discovery filtering, profile editing, auth method switching, and provider availability states.
+- Build completed successfully with all application routes.
+- The temporary QA route initially produced a hydration mismatch because it read the query string during render; it was fixed by reading it after mount, captures were repeated cleanly, and the temporary route was then removed.
 
-## Console errors checked
+## Full-view comparison evidence
 
-- Unavailable because browser inspection was blocked.
+- Dashboard: oversized grotesk hierarchy, rounded outlined modules, hard graphic depth, editorial founder illustration, active navigation, and functional multi-accent roles now match the reference language rather than only its lime color.
+- Discover: search, segmented controls, filters, fit statuses, portraits, and result cards match the flat outlined direction.
+- Account/profile: the large editorial identity block, avatar tile, verified state, and primary actions match the same system.
+- Login: the lime brand panel and flat outlined form provide a coherent entrance into the product.
+
+## Focused-region comparison evidence
+
+- Header/search controls, active sidebar items, primary buttons, progress tracks, status badges, and auth tabs were reviewed at readable scale.
+- No gradient, blurred shadow, gray page wash, emoji icon, or inconsistent active-state treatment remains in these regions.
 
 ## Comparison history
 
-- Pass 1: source opened and palette intent measured; implementation capture blocked.
-- Implementation change: grey canvas, grey search/composer fills, grey inactive icons, grey labels and grey tags were replaced with white surfaces and light borders.
+1. Initial audit found inconsistent black active states, pale gray card fills, weak borders, dark auth branding, and neutral progress indicators.
+2. Replaced these with shared token-driven active states, white surfaces, black outlines, and clear semantic accents.
+3. A follow-up review found the first pass reproduced the lime palette without enough of the reference's graphic language.
+4. Added display typography, thicker outlines, hard-offset depth, rounded pill geometry, an editorial illustration, and cyan/coral/pink/yellow accent roles; changed the auth brand moment to peach.
+5. Re-rendered the dashboard and verified its structure and interactive controls. No actionable P0/P1/P2 issues remained.
 
 ## Follow-up polish
 
-- Recheck the hover-state tint once a browser screenshot is available.
+- P3: once real member photography and future Kufuo illustrations are finalized, art direction can be tightened across discovery and empty states without changing the component system.
 
-## Final result
-
-final result: blocked
+final result: passed

@@ -35,11 +35,20 @@ const content = {
     nav: ["Discover", "How it works", "Founder journey", "Community"],
     signIn: "Sign in",
     join: "Join the community",
-    eyebrow: "Saudi-first. Arabic and English.",
-    heroTitle: "Find someone worthy of building with.",
-    heroBody: "Meet serious builders, explore credible ideas, and test how you work together before making the commitment.",
-    haveIdea: "I have an idea",
-    joinIdea: "I want to join an idea",
+    eyebrow: "Built in Saudi. For people serious about building.",
+    heroTitle: "The idea is yours. Find the person who can build it with you.",
+    heroBody: "Whether you bring the idea or the skill, Kufuo helps you meet a cofounder who complements you—with clear commitment, explained compatibility, and a work trial before the long-term decision.",
+    haveIdea: "I bring the idea",
+    joinIdea: "I bring the skill",
+    searchLabel: "Find your Kufuo",
+    searchPath: "What are you bringing?",
+    searchLocation: "Where will you build?",
+    searchLocationValue: "All Saudi Arabia",
+    searchExpertise: "What skill is missing?",
+    searchExpertiseValue: "Any expertise",
+    searchAction: "Find my cofounder",
+    featuredLabel: "Saudi builders",
+    heroIllustrationAlt: "Saudi founders collaborating on a product idea",
     trust: ["Curated community", "Compatibility explained", "Privacy built in"],
     sample: "Sample match",
     recommended: "Recommended for you",
@@ -47,18 +56,18 @@ const content = {
     matchReasons: ["Complementary product and technical skills", "Both available 15+ hours per week", "Aligned on early-stage risk"],
     viewProfile: "View example profile",
     discoverKicker: "Discover",
-    discoverTitle: "Meet people who complete your skill set.",
-    discoverBody: "Profiles show what matters before a first conversation: skills, commitment, expectations, and working style.",
+    discoverTitle: "Meet the person your idea is missing.",
+    discoverBody: "Skills matter. So do commitment, risk appetite, decision style, and how someone works when things get hard.",
     filters: { all: "All profiles", tech: "Technology", product: "Product", business: "Business" },
     sampleProfiles: "Illustrative profiles for the product preview",
-    pathsKicker: "Two ways to begin",
-    pathsTitle: "Bring the idea. Or bring the skill.",
+    pathsKicker: "Start where you are",
+    pathsTitle: "Bring the idea. Or bring what the idea needs.",
     paths: [
-      ["I am building an idea", "Publish a structured opportunity, explain what you have validated, and meet people who fill the gaps in your founding team.", "Create an opportunity"],
-      ["I want to join a team", "Find credible ideas that fit your experience, interests, availability, and appetite for risk.", "Build my Founder Passport"],
+      ["I have an idea and need a partner", "Share what you have tested, define the missing role, and meet people who can complete your founding team.", "Post a founding opportunity"],
+      ["I have skills and want to build", "Discover serious opportunities that fit your expertise, time, ambition, and appetite for risk.", "Create my founder profile"],
     ],
     opportunityKicker: "Opportunity preview",
-    opportunityTitle: "Clear expectations from the first click.",
+    opportunityTitle: "Know what you are stepping into before the first call.",
     opportunityBody: "Every opportunity shows the problem, current stage, role, commitment, location, and partnership model before anyone spends time on a meeting.",
     opportunityName: "Supply-chain intelligence for Saudi SMEs",
     opportunityStage: "Validating",
@@ -71,23 +80,23 @@ const content = {
     progress: "Founder progress",
     progressItems: ["12 customer interviews", "Problem validated", "Prototype scope ready"],
     howKicker: "How it works",
-    howTitle: "Do more than exchange introductions.",
+    howTitle: "Less small talk. More clarity.",
     how: [
-      ["Build your Founder Passport", "Show your skills, values, availability, risk tolerance, and the kind of company you want to build."],
-      ["Understand the fit", "See why a person or opportunity is recommended without relying on a mysterious compatibility score."],
-      ["Try working together", "Complete a short, structured sprint before making a long-term cofounder commitment."],
+      ["Show who you really are", "Share your skills, values, availability, risk tolerance, and the kind of company you want to build."],
+      ["See why the match could work", "Understand the common ground and the gaps—without relying on a mysterious compatibility score."],
+      ["Build something small together", "Complete a short, structured sprint before making a long-term cofounder commitment."],
     ],
     sprintKicker: "The Cofounder Trial Sprint",
-    sprintTitle: "Chemistry is easier to judge when you build something together.",
+    sprintTitle: "Before equity and promises, build something small together.",
     sprintBody: "Choose a small outcome, agree on responsibilities, and spend three or seven days working as a team. Private reflection prompts help both people decide what comes next.",
     sprintSteps: ["Choose one outcome", "Divide responsibilities", "Check in together", "Reflect privately", "Decide what is next"],
     startSprint: "See the sprint flow",
     journeyKicker: "Founder journey",
-    journeyTitle: "Progress that means something.",
+    journeyTitle: "Useful actions build real trust.",
     journeyBody: "No popularity leaderboard. Your journey advances through useful actions that build trust and move a startup forward.",
     journey: ["Explorer", "Contributor", "Builder", "Partner", "Cofounder"],
     communityKicker: "Built for the Saudi ecosystem",
-    communityTitle: "A community, not a cold directory.",
+    communityTitle: "People who have your back—not a list of names.",
     communityBody: "Industry circles, focused founder gatherings, and curated introductions help high-intent members meet beyond their existing networks.",
     events: [["AI builders majlis", "Riyadh · In person", "18 SEP"], ["Find your technical cofounder", "Online · Arabic", "24 SEP"]],
     safetyTitle: "Trust is part of the product.",
@@ -102,7 +111,7 @@ const content = {
       ["How does matching work?", "Recommendations use complementary skills, availability, stage, location, risk, and working preferences, then explain the strongest reasons for the fit."],
     ],
     ctaKicker: "Founding cohort",
-    ctaTitle: "Your next company may begin with one conversation.",
+    ctaTitle: "Your next company may begin with: “What are you building?”",
     ctaBody: "Choose your path and help shape the first Saudi-first cofounder community.",
     emailPlaceholder: "Work email",
     requestInvite: "Request an invitation",
@@ -117,11 +126,20 @@ const content = {
     nav: ["اكتشف", "كيف تعمل المنصة", "رحلة المؤسس", "المجتمع"],
     signIn: "تسجيل الدخول",
     join: "انضم للمجتمع",
-    eyebrow: "صُممت للسعودية. بالعربية والإنجليزية.",
-    heroTitle: "ابحث عن شخصٍ كفو لتبني معه.",
-    heroBody: "تعرّف على أشخاص جادين، واكتشف أفكارًا واعدة، وجرّبوا العمل معًا قبل اتخاذ قرار الشراكة.",
-    haveIdea: "لدي فكرة",
-    joinIdea: "أريد الانضمام إلى فكرة",
+    eyebrow: "من السعودية، للي ناوين يبنون بجد.",
+    heroTitle: "الفكرة عندك. باقي تلقى الكفو اللي يبنيها معك.",
+    heroBody: "سواء معك الفكرة أو المهارة، كفو يعرّفك على شريك مؤسس يكمّلك—بالتزام واضح، وتوافق مفهوم، وتجربة عمل قبل قرار الشراكة.",
+    haveIdea: "معي الفكرة",
+    joinIdea: "معي المهارة",
+    searchLabel: "لقّ كفوك",
+    searchPath: "وش جاي تبني؟",
+    searchLocation: "وين تفضّل تبني؟",
+    searchLocationValue: "كل السعودية",
+    searchExpertise: "وش المهارة الناقصة؟",
+    searchExpertiseValue: "أي مهارة",
+    searchAction: "لقّ كفوك",
+    featuredLabel: "صُنّاع من السعودية",
+    heroIllustrationAlt: "مؤسسان سعوديان يتعاونان على تطوير فكرة منتج",
     trust: ["مجتمع منتقى", "توافق واضح", "خصوصية من البداية"],
     sample: "مثال على تطابق",
     recommended: "مقترح لك",
@@ -129,18 +147,18 @@ const content = {
     matchReasons: ["مهارات تقنية ومنتجية متكاملة", "التزام مشترك بأكثر من ١٥ ساعة أسبوعيًا", "توافق في تقبّل مخاطر المرحلة المبكرة"],
     viewProfile: "عرض الملف التجريبي",
     discoverKicker: "اكتشف",
-    discoverTitle: "قابل من يكمل مهاراتك.",
-    discoverBody: "توضح الملفات ما يهم قبل المحادثة الأولى: المهارات، والالتزام، والتوقعات، وأسلوب العمل.",
+    discoverTitle: "لقّ الشخص اللي فكرتك تحتاجه.",
+    discoverBody: "المهارة مهمة، بس ما تكفي. شوف الالتزام، وتقبّل المخاطرة، وطريقة القرار، وكيف يشتغل الشخص وقت الجد.",
     filters: { all: "جميع الملفات", tech: "التقنية", product: "المنتج", business: "الأعمال" },
     sampleProfiles: "ملفات توضيحية لمعاينة المنتج",
-    pathsKicker: "طريقان للبداية",
-    pathsTitle: "قدّم الفكرة. أو قدّم المهارة.",
+    pathsKicker: "كل شخص يدخل من باب",
+    pathsTitle: "هات الفكرة. أو هات اللي تحتاجه الفكرة.",
     paths: [
-      ["أعمل على فكرة", "انشر فرصة واضحة، واشرح ما اختبرته، وقابل أشخاصًا يكملون فريقك المؤسس.", "أنشئ فرصة تأسيس"],
-      ["أريد الانضمام إلى فريق", "اكتشف أفكارًا جادة تناسب خبرتك واهتماماتك ووقتك واستعدادك للمخاطرة.", "أنشئ ملف المؤسس"],
+      ["معي فكرة وأدور شريك", "وضّح اللي جرّبته، وحدد الدور الناقص، وقابل ناس يكملون فريقك المؤسس.", "انشر فرصة تأسيس"],
+      ["معي مهارة وأدور فكرة", "اكتشف فرصًا جدية تناسب خبرتك ووقتك وطموحك واستعدادك للمخاطرة.", "أنشئ ملفك"],
     ],
     opportunityKicker: "معاينة الفرصة",
-    opportunityTitle: "توقعات واضحة من أول نقرة.",
+    opportunityTitle: "كل شيء واضح قبل أول مكالمة.",
     opportunityBody: "كل فرصة توضح المشكلة والمرحلة والدور والالتزام والموقع ونموذج الشراكة قبل أن يقضي أي طرف وقته في اجتماع.",
     opportunityName: "ذكاء سلاسل الإمداد للمنشآت السعودية",
     opportunityStage: "مرحلة التحقق",
@@ -153,23 +171,23 @@ const content = {
     progress: "تقدم المؤسس",
     progressItems: ["١٢ مقابلة مع عملاء", "تم التحقق من المشكلة", "نطاق النموذج الأولي جاهز"],
     howKicker: "كيف تعمل",
-    howTitle: "أكثر من مجرد تعارف.",
+    howTitle: "تعارف أقل. وضوح أكثر.",
     how: [
-      ["أنشئ ملف المؤسس", "اعرض مهاراتك وقيمك ووقتك وتقبلك للمخاطرة ونوع الشركة التي تريد بناءها."],
-      ["افهم سبب التوافق", "اعرف لماذا رُشّح لك شخص أو فرصة دون الاعتماد على درجة غامضة."],
-      ["جرّبوا العمل معًا", "أكملوا تجربة عملية قصيرة ومنظمة قبل اتخاذ قرار شراكة طويل المدى."],
+      ["عرّف بنفسك بصدق", "وضّح مهاراتك وقيمك ووقتك وتقبلك للمخاطرة ونوع الشركة اللي ودك تبنيها."],
+      ["افهم ليه ممكن تضبطون", "شوف نقاط الاتفاق والفجوات بوضوح، بدون الاعتماد على درجة توافق غامضة."],
+      ["جرّبوا تشتغلون سوا", "سوّوا تجربة عملية قصيرة ومنظمة قبل قرار الشراكة طويل المدى."],
     ],
     sprintKicker: "تجربة الشريك المؤسس",
-    sprintTitle: "أسهل طريقة لاختبار الانسجام هي أن تبنوا شيئًا معًا.",
+    sprintTitle: "قبل الحصص والوعود… ابنوا شيئًا صغيرًا سوا.",
     sprintBody: "اختاروا نتيجة صغيرة، وحددوا المسؤوليات، واعملوا كفريق لثلاثة أو سبعة أيام. تساعد الأسئلة الخاصة الطرفين على اتخاذ الخطوة التالية.",
     sprintSteps: ["اختيار نتيجة واحدة", "تقسيم المسؤوليات", "متابعة مشتركة", "تقييم خاص", "تحديد الخطوة التالية"],
     startSprint: "استعرض التجربة",
     journeyKicker: "رحلة المؤسس",
-    journeyTitle: "تقدم له معنى.",
+    journeyTitle: "كل خطوة مفيدة ترفع ثقة المجتمع فيك.",
     journeyBody: "لا توجد قائمة شعبية. تتقدم رحلتك عبر أفعال مفيدة تبني الثقة وتحرك المشروع إلى الأمام.",
     journey: ["مستكشف", "مساهم", "صانع", "شريك", "مؤسس مشارك"],
     communityKicker: "لمنظومة ريادة الأعمال السعودية",
-    communityTitle: "مجتمع، وليس دليل أسماء باردًا.",
+    communityTitle: "مجتمع فيه ناس تسندك، مو مجرد أسماء.",
     communityBody: "دوائر متخصصة، ولقاءات مركزة، وترشيحات منتقاة تساعد الأعضاء الجادين على اللقاء خارج شبكاتهم المعتادة.",
     events: [["مجلس صُنّاع الذكاء الاصطناعي", "الرياض · حضوري", "١٨ سبتمبر"], ["اعثر على شريكك التقني", "عن بُعد · بالعربية", "٢٤ سبتمبر"]],
     safetyTitle: "الثقة جزء من المنتج.",
@@ -184,10 +202,10 @@ const content = {
       ["كيف تعمل المطابقة؟", "تستخدم الترشيحات تكامل المهارات والوقت والمرحلة والموقع والمخاطرة وأسلوب العمل، ثم تشرح أسباب التوافق."],
     ],
     ctaKicker: "المجموعة التأسيسية",
-    ctaTitle: "قد تبدأ شركتك القادمة بمحادثة واحدة.",
+    ctaTitle: "يمكن شركتك الجاية تبدأ من: هلا، وش قاعد تبني؟",
     ctaBody: "اختر طريقك وساهم في تشكيل أول مجتمع سعودي للشركاء المؤسسين.",
     emailPlaceholder: "البريد المهني",
-    requestInvite: "اطلب دعوة",
+    requestInvite: "أرسل لي دعوة",
     choosePath: "اختر مسارك أولًا",
     selectedIdea: "ستنضم بصفتك صاحب فكرة.",
     selectedSkill: "ستنضم بصفتك شريكًا مؤسسًا محتملًا.",
@@ -210,6 +228,8 @@ export default function Home() {
   const [activeFilter, setActiveFilter] = useState<FilterKey>("all");
   const [menuOpen, setMenuOpen] = useState(false);
   const [path, setPath] = useState<"idea" | "skill" | null>(null);
+  const [location, setLocation] = useState("all");
+  const [expertise, setExpertise] = useState<FilterKey>("all");
   const [submitted, setSubmitted] = useState(false);
   const t = content[language];
   const dashboardHref = "/login?returnTo=%2Fdashboard";
@@ -235,6 +255,12 @@ export default function Home() {
     if (path) setSubmitted(true);
   }
 
+  function searchFounders(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setActiveFilter(expertise);
+    document.querySelector("#discover")?.scrollIntoView({ behavior: "smooth" });
+  }
+
   return (
     <main className="site-shell" dir={arabic ? "rtl" : "ltr"}>
       <header className="site-header">
@@ -255,26 +281,28 @@ export default function Home() {
           <p className="eyebrow"><MapPin size={16} />{t.eyebrow}</p>
           <h1>{t.heroTitle}</h1>
           <p className="hero-body">{t.heroBody}</p>
-          <div className="hero-actions">
-            <button className="button" type="button" onClick={() => choosePath("idea")}><Lightbulb size={19} />{t.haveIdea}</button>
-            <button className="button button-secondary" type="button" onClick={() => choosePath("skill")}><BriefcaseBusiness size={19} />{t.joinIdea}</button>
-          </div>
-          <ul className="trust-list">
-            {t.trust.map((item, index) => { const Icon = [ShieldCheck, Target, CheckCircle2][index]; return <li key={item}><Icon size={18} />{item}</li>; })}
-          </ul>
         </div>
 
-        <div className="match-preview" aria-label={t.sample}>
-          <div className="preview-topline"><span className="preview-label">{t.sample}</span><span className="status"><span className="status-dot" />{t.recommended}</span></div>
-          <div className="match-people">
-            <div className="person-mini"><img src="/profile-sara.jpg" alt="Illustrative founder profile" /><div><strong>{arabic ? "سارة" : "Sara"}</strong><span>{arabic ? "منتج ونمو" : "Product & growth"}</span></div></div>
-            <div className="match-link"><Handshake size={22} /></div>
-            <div className="person-mini person-mini-end"><img src="/profile-amir.jpg" alt="Illustrative founder profile" /><div><strong>{arabic ? "أمير" : "Amir"}</strong><span>{arabic ? "هندسة تقنية" : "Engineering"}</span></div></div>
-          </div>
-          <div className="fit-heading"><div><span>{arabic ? "سبب الترشيح" : "Why this works"}</span><h2>{t.strongFit}</h2></div><Target size={26} /></div>
-          <ul className="reason-list">{t.matchReasons.map((reason) => <li key={reason}><Check size={17} />{reason}</li>)}</ul>
-          <a className="panel-action" href="/profile">{t.viewProfile}<Arrow size={18} /></a>
+        <div className="hero-visual">
+          <div className="hero-visual-topline"><span><UsersRound size={16} />{t.featuredLabel}</span><span className="hero-visual-count">01</span></div>
+          <img src="/kufuo-founder-collaboration.png" alt={t.heroIllustrationAlt} />
+          <div className="hero-visual-caption"><span>{arabic ? "فكرة + مهارة" : "Idea + skill"}</span><strong>{arabic ? "ابدأ بالبناء معًا" : "Start building together"}</strong></div>
         </div>
+      </section>
+
+      <section className="founder-search-wrap section-frame" id="founder-search" aria-label={t.searchLabel}>
+        <form className="founder-search-panel" onSubmit={searchFounders}>
+          <div className="search-path-block">
+            <span className="search-field-label">{t.searchPath}</span>
+            <div className="search-path-toggle">
+              <button type="button" className={path === "idea" ? "is-selected" : ""} aria-pressed={path === "idea"} onClick={() => setPath("idea")}><Lightbulb size={17} />{t.haveIdea}</button>
+              <button type="button" className={path === "skill" ? "is-selected" : ""} aria-pressed={path === "skill"} onClick={() => setPath("skill")}><BriefcaseBusiness size={17} />{t.joinIdea}</button>
+            </div>
+          </div>
+          <label className="search-select-field"><span className="search-field-label"><MapPin size={15} />{t.searchLocation}</span><span className="select-control"><select value={location} onChange={(event) => setLocation(event.target.value)}><option value="all">{t.searchLocationValue}</option><option value="riyadh">{arabic ? "الرياض" : "Riyadh"}</option><option value="jeddah">{arabic ? "جدة" : "Jeddah"}</option><option value="eastern">{arabic ? "المنطقة الشرقية" : "Eastern Province"}</option><option value="remote">{arabic ? "عن بُعد" : "Remote"}</option></select><ChevronDown size={17} /></span></label>
+          <label className="search-select-field"><span className="search-field-label"><Code2 size={15} />{t.searchExpertise}</span><span className="select-control"><select value={expertise} onChange={(event) => setExpertise(event.target.value as FilterKey)}><option value="all">{t.searchExpertiseValue}</option><option value="tech">{t.filters.tech}</option><option value="product">{t.filters.product}</option><option value="business">{t.filters.business}</option></select><ChevronDown size={17} /></span></label>
+          <button className="search-submit" type="submit"><Search size={21} /><span>{t.searchAction}</span></button>
+        </form>
       </section>
 
       <section className="section-frame discover-section" id="discover">

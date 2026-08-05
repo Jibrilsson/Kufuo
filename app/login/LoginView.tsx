@@ -1,18 +1,21 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
+import Link from "next/link";
 import { ArrowLeft, CheckCircle2, Languages, LockKeyhole, Mail, Phone, ShieldCheck } from "lucide-react";
 import { FaGoogle, FaLinkedin } from "react-icons/fa";
 import { createClient } from "../lib/supabase/client";
+import { supabasePublishableKey, supabaseUrl } from "../lib/supabase/config";
 
 type Language = "en" | "ar";
 type Channel = "email" | "phone";
 type EmailMethod = "otp" | "password";
+type AuthAvailability = { google: boolean; linkedin: boolean; phone: boolean; loading: boolean };
 
 const copy = {
   en: {
     title: "Welcome to Kufuo",
-    subtitle: "Find someone worthy of building with.",
+    subtitle: "Your next build starts with the right person.",
     google: "Continue with Google",
     linkedin: "Continue with LinkedIn",
     or: "or continue with",
@@ -28,19 +31,21 @@ const copy = {
     signIn: "Sign in",
     create: "Create account",
     verify: "Verify and continue",
-    codeSent: "We sent a six-digit code. It may take a moment to arrive.",
+    codeSent: "We sent a secure login email. Enter the code if shown, or use the sign-in link in the email.",
     newHere: "New to Kufuo?",
     haveAccount: "Already have an account?",
     createLink: "Create an account",
     signInLink: "Sign in instead",
     back: "Back to home",
-    privacy: "Your contact details stay private until you choose to share them.",
+    privacy: "Your contact details stay private. You decide when to share them.",
     terms: "By continuing, you agree to Kufuo’s Terms and Privacy Policy.",
     loading: "Please wait…",
+    setupRequired: "Setup required",
+    providerNotice: "Google, LinkedIn, and mobile login are still being connected. Use an email verification code now.",
   },
   ar: {
-    title: "مرحبًا بك في كفو",
-    subtitle: "ابحث عن شخص كفو تبني معه.",
+    title: "حيّاك في كفو",
+    subtitle: "البداية الصح؟ تلقى الشخص الصح.",
     google: "المتابعة عبر Google",
     linkedin: "المتابعة عبر LinkedIn",
     or: "أو تابع باستخدام",
@@ -56,15 +61,17 @@ const copy = {
     signIn: "تسجيل الدخول",
     create: "إنشاء حساب",
     verify: "تحقق وتابع",
-    codeSent: "أرسلنا رمزًا من ستة أرقام. قد يستغرق وصوله لحظات.",
+    codeSent: "أرسلنا رسالة دخول آمنة. أدخل الرمز إن ظهر، أو استخدم رابط تسجيل الدخول في الرسالة.",
     newHere: "جديد في كفو؟",
     haveAccount: "لديك حساب بالفعل؟",
     createLink: "أنشئ حسابًا",
     signInLink: "سجّل الدخول",
     back: "العودة للرئيسية",
-    privacy: "تبقى بيانات التواصل خاصة حتى تختار مشاركتها.",
+    privacy: "بيانات تواصلك تبقى خاصة، وأنت تقرر متى تشاركها.",
     terms: "بمتابعتك، أنت توافق على شروط وسياسة خصوصية كفو.",
     loading: "يرجى الانتظار…",
+    setupRequired: "يتطلب إعدادًا",
+    providerNotice: "يجري ربط Google وLinkedIn وتسجيل الجوال. استخدم رمز التحقق عبر البريد الآن.",
   },
 } as const;
 
@@ -79,13 +86,29 @@ export function LoginView() {
   const [codeSent, setCodeSent] = useState(false);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
+  const [callbackError] = useState(() => typeof window !== "undefined" && new URLSearchParams(window.location.search).has("error"));
+  const [availability, setAvailability] = useState<AuthAvailability>({ google: false, linkedin: false, phone: false, loading: true });
   const ar = language === "ar";
   const t = copy[language];
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get("error")) setMessage(ar ? "تعذر إكمال تسجيل الدخول. حاول مرة أخرى." : "We couldn’t complete sign in. Please try again.");
-  }, [ar]);
+    let active = true;
+    fetch(`${supabaseUrl}/auth/v1/settings`, { headers: { apikey: supabasePublishableKey } })
+      .then((response) => response.ok ? response.json() : Promise.reject(new Error("Auth settings unavailable")))
+      .then((settings) => {
+        if (!active) return;
+        setAvailability({
+          google: Boolean(settings.external?.google),
+          linkedin: Boolean(settings.external?.linkedin_oidc || settings.external?.linkedin),
+          phone: Boolean(settings.external?.phone),
+          loading: false,
+        });
+      })
+      .catch(() => {
+        if (active) setAvailability((current) => ({ ...current, loading: false }));
+      });
+    return () => { active = false; };
+  }, []);
 
   function destination() {
     const value = new URLSearchParams(window.location.search).get("returnTo") ?? "/dashboard";
@@ -93,6 +116,11 @@ export function LoginView() {
   }
 
   async function social(provider: "google" | "linkedin_oidc") {
+    const enabled = provider === "google" ? availability.google : availability.linkedin;
+    if (!enabled) {
+      setMessage(t.providerNotice);
+      return;
+    }
     setBusy(true);
     setMessage("");
     const supabase = createClient();
@@ -132,8 +160,9 @@ export function LoginView() {
       return;
     }
 
+    const emailCallback = `${window.location.origin}/auth/callback?next=${encodeURIComponent(destination())}`;
     const result = channel === "email"
-      ? await supabase.auth.signInWithOtp({ email: identifier.trim(), options: { shouldCreateUser: true } })
+      ? await supabase.auth.signInWithOtp({ email: identifier.trim(), options: { shouldCreateUser: true, emailRedirectTo: emailCallback } })
       : await supabase.auth.signInWithOtp({ phone: normalizePhone(identifier), options: { shouldCreateUser: true } });
     if (result.error) setMessage(result.error.message);
     else setCodeSent(true);
@@ -141,6 +170,10 @@ export function LoginView() {
   }
 
   function switchChannel(next: Channel) {
+    if (next === "phone" && !availability.phone) {
+      setMessage(t.providerNotice);
+      return;
+    }
     setChannel(next);
     setIdentifier("");
     setPassword("");
@@ -152,7 +185,7 @@ export function LoginView() {
   return (
     <main className="auth-shell" dir={ar ? "rtl" : "ltr"}>
       <section className="auth-brand-panel">
-        <a className="brand auth-brand" href="/" aria-label="Kufuo home"><span className="brand-mark"><img src="/kufuo-mark-256.png" alt="" /></span><span dir="ltr">Kufuo <b lang="ar">| كفو</b></span></a>
+        <Link className="brand auth-brand" href="/" aria-label="Kufuo home"><span className="brand-mark"><img src="/kufuo-mark-256.png" alt="" /></span><span dir="ltr">Kufuo <b lang="ar">| كفو</b></span></Link>
         <div className="auth-brand-copy">
           <p className="eyebrow"><ShieldCheck size={16} />{ar ? "مجتمع مؤسسين موثوق" : "A trusted founder community"}</p>
           <h1>{t.subtitle}</h1>
@@ -167,25 +200,26 @@ export function LoginView() {
 
       <section className="auth-form-panel">
         <div className="auth-form-top">
-          <a href="/" className="auth-back"><ArrowLeft size={18} />{t.back}</a>
+          <Link href="/" className="auth-back"><ArrowLeft size={18} />{t.back}</Link>
           <button className="language-button" type="button" onClick={() => setLanguage(ar ? "en" : "ar")}><Languages size={18} />{ar ? "English" : "العربية"}</button>
         </div>
         <div className="auth-card">
           <div className="auth-heading"><span className="auth-logo"><img src="/kufuo-mark-256.png" alt="" /></span><h2>{t.title}</h2><p>{t.subtitle}</p></div>
           <div className="auth-socials">
-            <button type="button" onClick={() => social("google")} disabled={busy}><FaGoogle aria-hidden="true" />{t.google}</button>
-            <button type="button" onClick={() => social("linkedin_oidc")} disabled={busy}><FaLinkedin aria-hidden="true" />{t.linkedin}</button>
+            <button className={!availability.google && !availability.loading ? "is-unavailable" : ""} type="button" onClick={() => social("google")} disabled={busy || availability.loading || !availability.google} title={!availability.google && !availability.loading ? t.setupRequired : undefined}><FaGoogle aria-hidden="true" />{t.google}</button>
+            <button className={!availability.linkedin && !availability.loading ? "is-unavailable" : ""} type="button" onClick={() => social("linkedin_oidc")} disabled={busy || availability.loading || !availability.linkedin} title={!availability.linkedin && !availability.loading ? t.setupRequired : undefined}><FaLinkedin aria-hidden="true" />{t.linkedin}</button>
           </div>
+          {!availability.loading && (!availability.google || !availability.linkedin || !availability.phone) ? <p className="auth-provider-notice"><ShieldCheck size={15} />{t.providerNotice}</p> : null}
           <div className="auth-divider"><span>{t.or}</span></div>
           <div className="auth-channel-tabs" role="tablist">
             <button className={channel === "email" ? "is-active" : ""} type="button" onClick={() => switchChannel("email")}><Mail size={17} />{t.email}</button>
-            <button className={channel === "phone" ? "is-active" : ""} type="button" onClick={() => switchChannel("phone")}><Phone size={17} />{t.mobile}</button>
+            <button className={`${channel === "phone" ? "is-active" : ""} ${!availability.phone && !availability.loading ? "is-unavailable" : ""}`} type="button" onClick={() => switchChannel("phone")} disabled={availability.loading || !availability.phone} title={!availability.phone && !availability.loading ? t.setupRequired : undefined}><Phone size={17} />{t.mobile}</button>
           </div>
           {channel === "email" && !codeSent ? <div className="auth-method-toggle"><button type="button" className={emailMethod === "otp" ? "is-active" : ""} onClick={() => setEmailMethod("otp")}>{t.emailOtp}</button><button type="button" className={emailMethod === "password" ? "is-active" : ""} onClick={() => setEmailMethod("password")}>{t.passwordMethod}</button></div> : null}
           <form className="auth-form" onSubmit={submit}>
             {!codeSent ? <label><span>{channel === "email" ? t.emailAddress : t.phoneNumber}</span><div className="auth-input"><span>{channel === "email" ? <Mail size={18} /> : <Phone size={18} />}</span>{channel === "phone" ? <b dir="ltr">+966</b> : null}<input type={channel === "email" ? "email" : "tel"} inputMode={channel === "email" ? "email" : "tel"} autoComplete={channel === "email" ? "email" : "tel"} value={identifier} onChange={(event) => setIdentifier(event.target.value)} placeholder={channel === "email" ? "name@example.com" : "5X XXX XXXX"} required /></div></label> : <><p className="auth-code-note"><CheckCircle2 size={18} />{t.codeSent}</p><label><span>{t.otp}</span><div className="auth-input auth-code-input"><LockKeyhole size={18} /><input value={code} onChange={(event) => setCode(event.target.value.replace(/\D/g, "").slice(0, 6))} inputMode="numeric" autoComplete="one-time-code" placeholder="000000" minLength={6} required /></div></label></>}
             {channel === "email" && emailMethod === "password" && !codeSent ? <label><span>{t.password}</span><div className="auth-input"><LockKeyhole size={18} /><input type="password" value={password} onChange={(event) => setPassword(event.target.value)} minLength={8} autoComplete={accountMode === "signin" ? "current-password" : "new-password"} required /></div></label> : null}
-            {message ? <p className="auth-message" role="status">{message}</p> : null}
+            {message || callbackError ? <p className="auth-message" role="status">{message || (ar ? "تعذر إكمال تسجيل الدخول. استخدم رمز التحقق عبر البريد الآن." : "We couldn’t complete that sign in. Use an email verification code for now.")}</p> : null}
             <button className="button auth-submit" type="submit" disabled={busy}>{busy ? t.loading : codeSent ? t.verify : channel === "email" && emailMethod === "password" ? accountMode === "signup" ? t.create : t.signIn : t.send}</button>
           </form>
           {channel === "email" && emailMethod === "password" && !codeSent ? <p className="auth-switch">{accountMode === "signin" ? t.newHere : t.haveAccount} <button type="button" onClick={() => setAccountMode(accountMode === "signin" ? "signup" : "signin")}>{accountMode === "signin" ? t.createLink : t.signInLink}</button></p> : null}
