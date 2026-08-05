@@ -19,18 +19,22 @@ export async function generateMetadata(): Promise<Metadata> {
     description: "A Saudi-first community for finding compatible cofounders, joining credible startup ideas, and testing how you work together.",
     applicationName: "Kufuo | كفو",
     keywords: ["cofounder", "Saudi Arabia", "startups", "founders", "Arabic"],
+    icons: {
+      icon: "/kufuo-mark-256.png",
+      apple: "/kufuo-mark-256.png",
+    },
     openGraph: {
       title: "Find someone worthy of building with.",
       description: "Meet serious builders, explore credible ideas, and test how you work together before making the commitment.",
       type: "website",
       siteName: "Kufuo | كفو",
-      images: [{ url: `${origin}/og-kufuo.png`, width: 1200, height: 630, alt: "Kufuo — Find someone worthy of building with" }],
+      images: [{ url: `${origin}/og-kufuo-mark.png`, width: 1200, height: 630, alt: "Kufuo — Find someone worthy of building with" }],
     },
     twitter: {
       card: "summary_large_image",
       title: "Find someone worthy of building with.",
       description: "A Saudi-first community for people ready to build together.",
-      images: [`${origin}/og-kufuo.png`],
+      images: [`${origin}/og-kufuo-mark.png`],
     },
   };
 }
