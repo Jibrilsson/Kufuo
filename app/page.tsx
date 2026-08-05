@@ -272,7 +272,7 @@ export default function Home() {
           </div>
           <div className="fit-heading"><div><span>{arabic ? "سبب الترشيح" : "Why this works"}</span><h2>{t.strongFit}</h2></div><Target size={26} /></div>
           <ul className="reason-list">{t.matchReasons.map((reason) => <li key={reason}><Check size={17} />{reason}</li>)}</ul>
-          <a className="panel-action" href="#discover">{t.viewProfile}<Arrow size={18} /></a>
+          <a className="panel-action" href="/profile">{t.viewProfile}<Arrow size={18} /></a>
         </div>
       </section>
 
@@ -288,7 +288,7 @@ export default function Home() {
             <article className="profile-card" key={profile.name[0]}>
               <div className="profile-photo-wrap"><img className="profile-photo" src={profile.image} alt="Illustrative profile portrait" /><span className="availability-badge"><span className="status-dot" />{arabic ? "متاح" : "Available"}</span></div>
               <div className="profile-content">
-                <div className="profile-title-row"><div><h3>{profile.name[l]}</h3><p>{profile.role[l]}</p></div><button className="icon-button" type="button" aria-label={`View ${profile.name[0]} profile`}><Arrow size={19} /></button></div>
+                <div className="profile-title-row"><div><h3>{profile.name[l]}</h3><p>{profile.role[l]}</p></div><a className="icon-button" href="/profile" aria-label={`View ${profile.name[0]} profile`}><Arrow size={19} /></a></div>
                 <div className="profile-meta"><span><MapPin size={15} />{profile.city[l]}</span><span><Clock3 size={15} />{profile.time[l]}</span></div>
                 <div className="tag-row">{profile.tags[l].map((tag) => <span className="tag" key={tag}>{tag}</span>)}</div>
               </div>
