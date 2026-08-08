@@ -33,7 +33,7 @@ type FilterKey = "all" | "tech" | "product" | "business";
 const content = {
   en: {
     nav: ["Discover", "How it works", "Founder journey", "Community"],
-    signIn: "Sign in",
+    signIn: "Log in",
     join: "Join the community",
     eyebrow: "Built in Saudi. For people serious about building.",
     heroTitle: "The idea is yours. Find the person who can build it with you.",
@@ -124,7 +124,7 @@ const content = {
   },
   ar: {
     nav: ["اكتشف", "كيف تعمل المنصة", "رحلة المؤسس", "المجتمع"],
-    signIn: "تسجيل الدخول",
+    signIn: "دخول",
     join: "انضم للمجتمع",
     eyebrow: "من السعودية، للي ناوين يبنون بجد.",
     heroTitle: "الفكرة عندك. باقي تلقى الكفو اللي يبنيها معك.",
@@ -268,10 +268,11 @@ export default function Home() {
         <a className="brand" href="#top" aria-label="Kufuo home"><span className="brand-mark"><img src="/kufuo-logo.svg" alt="Kufuo" /></span></a>
         <nav className={`desktop-nav ${menuOpen ? "is-open" : ""}`} aria-label="Primary navigation">
           {t.nav.map((item, index) => <a key={item} href={["#discover", "#how", "#journey", "#community"][index]} onClick={() => setMenuOpen(false)}>{item}</a>)}
+          <div className="mobile-auth-links"><a className="button button-secondary" href={dashboardHref}>{t.signIn}</a><a className="button button-lime" href={registrationHref}>{t.join}</a></div>
         </nav>
         <div className="header-actions">
           <button className="language-button" type="button" onClick={() => setLanguage(arabic ? "en" : "ar")} aria-label={arabic ? "Switch to English" : "التبديل إلى العربية"}><Languages size={18} /><span>{arabic ? "English" : "العربية"}</span></button>
-          <a className="text-link header-sign-in" href={dashboardHref}>{t.signIn}</a>
+          <a className="button button-small button-secondary header-sign-in" href={dashboardHref}>{t.signIn}</a>
           <a className="button button-small" href={registrationHref}>{t.join}</a>
           <button className="menu-button" type="button" onClick={() => setMenuOpen((value) => !value)} aria-expanded={menuOpen} aria-label={menuOpen ? "Close navigation" : "Open navigation"}>{menuOpen ? <X size={22} /> : <Menu size={22} />}</button>
         </div>

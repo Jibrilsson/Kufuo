@@ -48,7 +48,8 @@ img { display: block; max-width: 100%; }
 .language-button, .menu-button, .icon-button { border: 0; background: transparent; color: var(--ink); cursor: pointer; }
 .language-button { min-height: 40px; display: inline-flex; align-items: center; gap: 7px; padding: 0 10px; border-radius: 10px; font-size: 14px; }
 .language-button:hover { background: var(--surface-subtle); }
-.header-sign-in { font-size: 14px; font-weight: 600; }
+.header-sign-in { background: white; color: var(--ink); font-size: 14px; font-weight: 650; }
+.mobile-auth-links { display: none; }
 
 .button { min-height: 48px; padding: 0 22px; display: inline-flex; align-items: center; justify-content: center; gap: 10px; border: 1px solid var(--ink); border-radius: 13px; background: var(--ink); color: white; font-size: 15px; font-weight: 650; cursor: pointer; transition: background 160ms ease, color 160ms ease, border-color 160ms ease; }
 .button:hover { background: #252525; }
@@ -264,6 +265,8 @@ img { display: block; max-width: 100%; }
   .desktop-nav.is-open { display: flex; }
   .desktop-nav a { padding: 14px; border-bottom: 1px solid var(--line); }
   .desktop-nav a:last-child { border-bottom: 0; }
+  .desktop-nav .mobile-auth-links { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 14px; }
+  .desktop-nav .mobile-auth-links a { border-bottom: 1px solid var(--ink); }
   .menu-button { display: inline-flex; }
   .header-sign-in { display: none; }
   .hero { grid-template-columns: 1fr .8fr; gap: 5%; }
