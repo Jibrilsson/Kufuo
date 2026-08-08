@@ -16,6 +16,8 @@ const copy = {
   en: {
     title: "Welcome to Kufuo",
     subtitle: "Your next build starts with the right person.",
+    signupTitle: "Create your Kufuo account",
+    signupSubtitle: "Start with a profile that shows what you bring—and what you want to build.",
     google: "Continue with Google",
     linkedin: "Continue with LinkedIn",
     or: "or continue with",
@@ -28,6 +30,7 @@ const copy = {
     emailOtp: "Email code",
     passwordMethod: "Password",
     send: "Send verification code",
+    startRegistration: "Start registration",
     signIn: "Sign in",
     create: "Create account",
     verify: "Verify and continue",
@@ -46,6 +49,8 @@ const copy = {
   ar: {
     title: "حيّاك في كفو",
     subtitle: "البداية الصح؟ تلقى الشخص الصح.",
+    signupTitle: "أنشئ حسابك في كفو",
+    signupSubtitle: "ابدأ بملف يوضّح وش تضيف للفريق، ووش ودك تبني.",
     google: "المتابعة عبر Google",
     linkedin: "المتابعة عبر LinkedIn",
     or: "أو تابع باستخدام",
@@ -58,6 +63,7 @@ const copy = {
     emailOtp: "رمز البريد",
     passwordMethod: "كلمة المرور",
     send: "إرسال رمز التحقق",
+    startRegistration: "ابدأ التسجيل",
     signIn: "تسجيل الدخول",
     create: "إنشاء حساب",
     verify: "تحقق وتابع",
@@ -90,6 +96,12 @@ export function LoginView() {
   const [availability, setAvailability] = useState<AuthAvailability>({ google: false, linkedin: false, phone: false, loading: true });
   const ar = language === "ar";
   const t = copy[language];
+
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("mode") === "signup") {
+      setAccountMode("signup");
+    }
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -162,8 +174,8 @@ export function LoginView() {
 
     const emailCallback = `${window.location.origin}/auth/callback?next=${encodeURIComponent(destination())}`;
     const result = channel === "email"
-      ? await supabase.auth.signInWithOtp({ email: identifier.trim(), options: { shouldCreateUser: true, emailRedirectTo: emailCallback } })
-      : await supabase.auth.signInWithOtp({ phone: normalizePhone(identifier), options: { shouldCreateUser: true } });
+      ? await supabase.auth.signInWithOtp({ email: identifier.trim(), options: { shouldCreateUser: accountMode === "signup", emailRedirectTo: emailCallback } })
+      : await supabase.auth.signInWithOtp({ phone: normalizePhone(identifier), options: { shouldCreateUser: accountMode === "signup" } });
     if (result.error) setMessage(result.error.message);
     else setCodeSent(true);
     setBusy(false);
@@ -204,7 +216,7 @@ export function LoginView() {
           <button className="language-button" type="button" onClick={() => setLanguage(ar ? "en" : "ar")}><Languages size={18} />{ar ? "English" : "العربية"}</button>
         </div>
         <div className="auth-card">
-          <div className="auth-heading"><span className="auth-logo auth-logo-wide"><img src="/kufuo-logo.svg" alt="Kufuo" /></span><h2>{t.title}</h2><p>{t.subtitle}</p></div>
+          <div className="auth-heading"><span className="auth-logo auth-logo-wide"><img src="/kufuo-logo.svg" alt="Kufuo" /></span><h2>{accountMode === "signup" ? t.signupTitle : t.title}</h2><p>{accountMode === "signup" ? t.signupSubtitle : t.subtitle}</p></div>
           <div className="auth-socials">
             <button className={!availability.google && !availability.loading ? "is-unavailable" : ""} type="button" onClick={() => social("google")} disabled={busy || availability.loading || !availability.google} title={!availability.google && !availability.loading ? t.setupRequired : undefined}><FaGoogle aria-hidden="true" />{t.google}</button>
             <button className={!availability.linkedin && !availability.loading ? "is-unavailable" : ""} type="button" onClick={() => social("linkedin_oidc")} disabled={busy || availability.loading || !availability.linkedin} title={!availability.linkedin && !availability.loading ? t.setupRequired : undefined}><FaLinkedin aria-hidden="true" />{t.linkedin}</button>
@@ -220,7 +232,7 @@ export function LoginView() {
             {!codeSent ? <label><span>{channel === "email" ? t.emailAddress : t.phoneNumber}</span><div className="auth-input"><span>{channel === "email" ? <Mail size={18} /> : <Phone size={18} />}</span>{channel === "phone" ? <b dir="ltr">+966</b> : null}<input type={channel === "email" ? "email" : "tel"} inputMode={channel === "email" ? "email" : "tel"} autoComplete={channel === "email" ? "email" : "tel"} value={identifier} onChange={(event) => setIdentifier(event.target.value)} placeholder={channel === "email" ? "name@example.com" : "5X XXX XXXX"} required /></div></label> : <><p className="auth-code-note"><CheckCircle2 size={18} />{t.codeSent}</p><label><span>{t.otp}</span><div className="auth-input auth-code-input"><LockKeyhole size={18} /><input value={code} onChange={(event) => setCode(event.target.value.replace(/\D/g, "").slice(0, 6))} inputMode="numeric" autoComplete="one-time-code" placeholder="000000" minLength={6} required /></div></label></>}
             {channel === "email" && emailMethod === "password" && !codeSent ? <label><span>{t.password}</span><div className="auth-input"><LockKeyhole size={18} /><input type="password" value={password} onChange={(event) => setPassword(event.target.value)} minLength={8} autoComplete={accountMode === "signin" ? "current-password" : "new-password"} required /></div></label> : null}
             {message || callbackError ? <p className="auth-message" role="status">{message || (ar ? "تعذر إكمال تسجيل الدخول. استخدم رمز التحقق عبر البريد الآن." : "We couldn’t complete that sign in. Use an email verification code for now.")}</p> : null}
-            <button className="button auth-submit" type="submit" disabled={busy}>{busy ? t.loading : codeSent ? t.verify : channel === "email" && emailMethod === "password" ? accountMode === "signup" ? t.create : t.signIn : t.send}</button>
+            <button className="button auth-submit" type="submit" disabled={busy}>{busy ? t.loading : codeSent ? t.verify : channel === "email" && emailMethod === "password" ? accountMode === "signup" ? t.create : t.signIn : accountMode === "signup" ? t.startRegistration : t.send}</button>
           </form>
           {channel === "email" && emailMethod === "password" && !codeSent ? <p className="auth-switch">{accountMode === "signin" ? t.newHere : t.haveAccount} <button type="button" onClick={() => setAccountMode(accountMode === "signin" ? "signup" : "signin")}>{accountMode === "signin" ? t.createLink : t.signInLink}</button></p> : null}
           <p className="auth-private"><ShieldCheck size={16} />{t.privacy}</p>
