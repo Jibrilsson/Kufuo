@@ -3,19 +3,18 @@
 import { useEffect, useState } from "react";
 import { Languages, Menu, X } from "lucide-react";
 import { createClient } from "../lib/supabase/client";
+import type { Language } from "../lib/kufuo/useLanguage";
 
 type AuthState = "loading" | "signed-in" | "signed-out";
 
-const navigation = [
-  ["Discover", "/#discover"],
-  ["How it works", "/#how"],
-  ["Founder journey", "/#journey"],
-  ["Community", "/#community"],
-] as const;
-
-export function LegalSiteHeader() {
+export function LegalSiteHeader({ language, onLanguageChange }: { language: Language; onLanguageChange: () => void }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [authState, setAuthState] = useState<AuthState>("loading");
+  const arabic = language === "ar";
+  const home = arabic ? "/?lang=ar" : "/";
+  const navigation = arabic
+    ? [["اكتشف", "/?lang=ar#discover"], ["كيف تعمل المنصة", "/?lang=ar#how"], ["رحلة المؤسس", "/?lang=ar#journey"], ["المجتمع", "/?lang=ar#community"]]
+    : [["Discover", "/#discover"], ["How it works", "/#how"], ["Founder journey", "/#journey"], ["Community", "/#community"]];
 
   useEffect(() => {
     const supabase = createClient();
@@ -42,20 +41,16 @@ export function LegalSiteHeader() {
   const signedIn = authState === "signed-in";
   const secondaryAuthHref = signedIn ? "/account" : "/login?returnTo=%2Fdashboard";
   const primaryAuthHref = signedIn ? "/dashboard" : "/login?mode=signup&returnTo=%2Faccount";
-  const secondaryAuthLabel = signedIn ? "My profile" : "Log in";
-  const primaryAuthLabel = signedIn ? "Dashboard" : "Join the community";
-
-  function openArabicHome() {
-    window.location.assign("/?lang=ar");
-  }
+  const secondaryAuthLabel = signedIn ? (arabic ? "ملفي" : "My profile") : (arabic ? "دخول" : "Log in");
+  const primaryAuthLabel = signedIn ? (arabic ? "لوحة التحكم" : "Dashboard") : (arabic ? "انضم للمجتمع" : "Join the community");
 
   return (
-    <header className="site-header legal-site-header">
-      <a className="brand" href="/" aria-label="Kufuo home">
+    <header className="site-header legal-site-header" dir={arabic ? "rtl" : "ltr"}>
+      <a className="brand" href={home} aria-label={arabic ? "الصفحة الرئيسية لكفو" : "Kufuo home"}>
         <span className="brand-mark"><img src="/kufuo-logo.svg" alt="Kufuo" /></span>
       </a>
 
-      <nav className={`desktop-nav ${menuOpen ? "is-open" : ""}`} aria-label="Primary navigation">
+      <nav className={`desktop-nav ${menuOpen ? "is-open" : ""}`} aria-label={arabic ? "التنقل الرئيسي" : "Primary navigation"}>
         {navigation.map(([label, href]) => (
           <a key={href} href={href} onClick={() => setMenuOpen(false)}>{label}</a>
         ))}
@@ -66,8 +61,8 @@ export function LegalSiteHeader() {
       </nav>
 
       <div className="header-actions">
-        <button className="language-button" type="button" onClick={openArabicHome} aria-label="التبديل إلى العربية">
-          <Languages size={18} /><span>العربية</span>
+        <button className="language-button" type="button" onClick={onLanguageChange} aria-label={arabic ? "Switch to English" : "التبديل إلى العربية"}>
+          <Languages size={18} /><span>{arabic ? "English" : "العربية"}</span>
         </button>
         <div className={`header-auth-links ${authState === "loading" ? "is-loading" : ""}`} aria-busy={authState === "loading"}>
           <a className="button button-small button-secondary header-sign-in" href={secondaryAuthHref}>{secondaryAuthLabel}</a>
@@ -78,7 +73,7 @@ export function LegalSiteHeader() {
           type="button"
           onClick={() => setMenuOpen((value) => !value)}
           aria-expanded={menuOpen}
-          aria-label={menuOpen ? "Close navigation" : "Open navigation"}
+          aria-label={menuOpen ? (arabic ? "إغلاق التنقل" : "Close navigation") : (arabic ? "فتح التنقل" : "Open navigation")}
         >
           {menuOpen ? <X size={22} /> : <Menu size={22} />}
         </button>

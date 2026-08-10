@@ -27,8 +27,8 @@ import {
   Zap,
 } from "lucide-react";
 import { createClient } from "./lib/supabase/client";
+import { useKufuoLanguage } from "./lib/kufuo/useLanguage";
 
-type Language = "en" | "ar";
 type FilterKey = "all" | "tech" | "product" | "business";
 type AuthState = "loading" | "signed-in" | "signed-out";
 
@@ -230,7 +230,7 @@ const profiles = [
 const howIcons = [CircleUserRound, Search, Zap] as const;
 
 export default function Home() {
-  const [language, setLanguage] = useState<Language>("en");
+  const { language, arabic, switchLanguage } = useKufuoLanguage();
   const [activeFilter, setActiveFilter] = useState<FilterKey>("all");
   const [menuOpen, setMenuOpen] = useState(false);
   const [path, setPath] = useState<"idea" | "skill" | null>(null);
@@ -244,7 +244,6 @@ export default function Home() {
   const t = content[language];
   const dashboardHref = "/login?returnTo=%2Fdashboard";
   const registrationHref = "/login?mode=signup&returnTo=%2Faccount";
-  const arabic = language === "ar";
   const l = arabic ? 1 : 0;
   const Arrow = arabic ? ArrowLeft : ArrowRight;
   const signedIn = authState === "signed-in";
@@ -252,18 +251,6 @@ export default function Home() {
   const primaryAuthHref = signedIn ? "/dashboard" : registrationHref;
   const secondaryAuthLabel = signedIn ? t.profile : t.signIn;
   const primaryAuthLabel = signedIn ? t.dashboard : t.join;
-
-  useEffect(() => {
-    const frame = window.requestAnimationFrame(() => {
-      if (new URLSearchParams(window.location.search).get("lang") === "ar") setLanguage("ar");
-    });
-    return () => window.cancelAnimationFrame(frame);
-  }, []);
-
-  useEffect(() => {
-    document.documentElement.lang = language;
-    document.documentElement.dir = arabic ? "rtl" : "ltr";
-  }, [language, arabic]);
 
   useEffect(() => {
     const supabase = createClient();
@@ -321,7 +308,7 @@ export default function Home() {
           <div className={`mobile-auth-links ${authState === "loading" ? "is-loading" : ""}`} aria-busy={authState === "loading"}><a className="button button-secondary" href={secondaryAuthHref}>{secondaryAuthLabel}</a><a className="button button-lime" href={primaryAuthHref}>{primaryAuthLabel}</a></div>
         </nav>
         <div className="header-actions">
-          <button className="language-button" type="button" onClick={() => setLanguage(arabic ? "en" : "ar")} aria-label={arabic ? "Switch to English" : "التبديل إلى العربية"}><Languages size={18} /><span>{arabic ? "English" : "العربية"}</span></button>
+          <button className="language-button" type="button" onClick={switchLanguage} aria-label={arabic ? "Switch to English" : "التبديل إلى العربية"}><Languages size={18} /><span>{arabic ? "English" : "العربية"}</span></button>
           <div className={`header-auth-links ${authState === "loading" ? "is-loading" : ""}`} aria-busy={authState === "loading"}>
             <a className="button button-small button-secondary header-sign-in" href={secondaryAuthHref}>{secondaryAuthLabel}</a>
             <a className="button button-small" href={primaryAuthHref}>{primaryAuthLabel}</a>
@@ -440,7 +427,7 @@ export default function Home() {
         </div>
       </section>
 
-      <footer className="site-footer section-frame"><div><a className="brand" href="#top" aria-label="Kufuo home"><span className="brand-mark"><img src="/kufuo-logo.svg" alt="Kufuo" /></span></a><p>{t.footer}</p></div><nav><a href="/community-guidelines">{arabic ? "الأمان" : "Safety"}</a><a href="#community">{arabic ? "المجتمع" : "Community"}</a><a href="/privacy">{arabic ? "الخصوصية" : "Privacy"}</a><a href="/terms">{arabic ? "الشروط" : "Terms"}</a></nav><span>© 2026 Kufuo | كفو</span></footer>
+      <footer className="site-footer section-frame"><div><a className="brand" href="#top" aria-label="Kufuo home"><span className="brand-mark"><img src="/kufuo-logo.svg" alt="Kufuo" /></span></a><p>{t.footer}</p></div><nav><a href={arabic ? "/community-guidelines?lang=ar" : "/community-guidelines"}>{arabic ? "الأمان" : "Safety"}</a><a href={arabic ? "/?lang=ar#community" : "#community"}>{arabic ? "المجتمع" : "Community"}</a><a href={arabic ? "/privacy?lang=ar" : "/privacy"}>{arabic ? "الخصوصية" : "Privacy"}</a><a href={arabic ? "/terms?lang=ar" : "/terms"}>{arabic ? "الشروط" : "Terms"}</a></nav><span>© 2026 Kufuo | كفو</span></footer>
     </main>
   );
 }
