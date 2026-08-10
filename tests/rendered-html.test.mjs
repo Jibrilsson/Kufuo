@@ -29,6 +29,11 @@ test("server-renders the Kufuo landing page with real authentication entry point
   assert.doesNotMatch(html, /Your site is taking shape|Building your site/i);
 });
 
+test("mirrors forward chevrons throughout RTL interfaces", async () => {
+  const styles = await readFile(new URL("../app/globals.css", import.meta.url), "utf8");
+  assert.match(styles, /\[dir=["']rtl["']\]\s+\.lucide-chevron-right\s*\{[^}]*transform:\s*scaleX\(-1\)/i);
+});
+
 test("ships the protected product routes and RLS-backed core data model", async () => {
   const requiredRoutes = [
     "../app/dashboard/page.tsx",
