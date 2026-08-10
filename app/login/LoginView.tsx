@@ -196,18 +196,12 @@ export function LoginView() {
 
   return (
     <main className="auth-shell" dir={ar ? "rtl" : "ltr"}>
-      <section className="auth-brand-panel">
-        <Link className="brand auth-brand" href="/" aria-label="Kufuo home"><span className="brand-mark"><img src="/kufuo-logo.svg" alt="Kufuo" /></span></Link>
-        <div className="auth-brand-copy">
-          <p className="eyebrow"><ShieldCheck size={16} />{ar ? "مجتمع مؤسسين موثوق" : "A trusted founder community"}</p>
-          <h1>{t.subtitle}</h1>
-          <ul>
-            <li><CheckCircle2 size={19} />{ar ? "ملفات مؤسسين جادة" : "Serious founder profiles"}</li>
-            <li><CheckCircle2 size={19} />{ar ? "توافق في المهارات والقيم" : "Skills and values compatibility"}</li>
-            <li><CheckCircle2 size={19} />{ar ? "خصوصية وتحكم كامل" : "Privacy and full control"}</li>
-          </ul>
-        </div>
-        <p className="auth-brand-foot">Kufuo | كفو · Saudi Arabia</p>
+      <section className="auth-brand-panel" aria-hidden="true">
+        <img
+          className="auth-brand-visual"
+          src="/illustrations/kufuo-login-collaboration.png"
+          alt=""
+        />
       </section>
 
       <section className="auth-form-panel">
