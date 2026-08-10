@@ -24,7 +24,8 @@ test("server-renders the Kufuo landing page with real authentication entry point
   assert.match(html, /href="\/login\?returnTo=%2Fdashboard"[^>]*>Log in<\/a>/i);
   assert.match(html, /href="\/login\?mode=signup&amp;returnTo=%2Faccount"[^>]*>Join the community<\/a>/i);
   assert.match(html, /src="\/kufuo-logo\.svg"/i);
-  assert.match(html, /The idea is yours\. Find the person who can build it with you\./i);
+  assert.match(html, /Find the right person to build what comes next\./i);
+  assert.doesNotMatch(html, /Saudi|السعود/i);
   assert.doesNotMatch(html, /Your site is taking shape|Building your site/i);
 });
 

@@ -16,9 +16,9 @@ export async function generateMetadata(): Promise<Metadata> {
 
   return {
     title: "Kufuo | كفو — Find someone worthy of building with",
-    description: "A Saudi-first community for finding compatible cofounders, joining credible startup ideas, and testing how you work together.",
+    description: "A focused community for finding compatible cofounders, exploring credible ideas, and learning how you work together before committing.",
     applicationName: "Kufuo | كفو",
-    keywords: ["cofounder", "Saudi Arabia", "startups", "founders", "Arabic"],
+    keywords: ["cofounder", "startups", "founders", "business partner", "founder community"],
     icons: {
       icon: "/kufuo-mark-256.png",
       apple: "/kufuo-mark-256.png",
@@ -33,7 +33,7 @@ export async function generateMetadata(): Promise<Metadata> {
     twitter: {
       card: "summary_large_image",
       title: "Find someone worthy of building with.",
-      description: "A Saudi-first community for people ready to build together.",
+      description: "A focused founder community for people ready to build together.",
       images: [`${origin}/og-kufuo-mark.png`],
     },
   };

@@ -10,7 +10,7 @@
 
 ## Full-view comparison evidence
 
-The generated source artwork is reproduced as the sole content of the left brand panel. It keeps the original portrait composition, peach field, lime organic shape, black line work, cyan accents, and Saudi founder subjects. The desktop crop fills the 42% panel without adding text, a logo, gradients, or shadow effects. The authentication form and its interactions remain unchanged.
+The generated source artwork is reproduced as the sole content of the left brand panel. It keeps the original portrait composition, peach field, lime organic shape, black line work, cyan accents, and founder subjects. The desktop crop fills the 42% panel without adding text, a logo, gradients, or shadow effects. The authentication form and its interactions remain unchanged.
 
 ## Focused region comparison evidence
 

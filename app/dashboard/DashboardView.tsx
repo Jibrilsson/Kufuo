@@ -33,8 +33,8 @@ const copy = {
   en: {
     search: "Search founders, ideas, or sectors",
     nav: ["Feed", "Discover", "Messages", "Connections", "Notifications", "Profile", "Settings"],
-    greeting: "Good to see you",
-    intro: "Real founder updates, credible ideas, and conversations selected for your community.",
+    greeting: "Welcome back",
+    intro: "Follow new ideas, open opportunities, and useful updates from the founder community.",
     tabs: ["For you", "Opportunities", "Ideas", "Community"],
     prompt: "Share an update, ask for help, or describe who you need…",
     publish: "Post to the community",
@@ -44,7 +44,7 @@ const copy = {
     comment: "Comment",
     save: "Save",
     completeProfile: "Complete your profile",
-    passport: "Founder Passport",
+    passport: "Founder profile",
     passportBody: "Complete your profile to become discoverable and improve recommendations.",
     continue: "Continue profile",
     signOut: "Sign out",
@@ -52,8 +52,8 @@ const copy = {
   ar: {
     search: "ابحث عن مؤسسين أو أفكار أو قطاعات",
     nav: ["الخلاصة", "استكشف", "الرسائل", "العلاقات", "التنبيهات", "الملف الشخصي", "الإعدادات"],
-    greeting: "سعداء بعودتك",
-    intro: "تحديثات حقيقية من المؤسسين وأفكار موثوقة ونقاشات من مجتمعك.",
+    greeting: "حيّاك من جديد",
+    intro: "تابع الأفكار الجديدة والفرص المفتوحة والتحديثات المفيدة من مجتمع المؤسسين.",
     tabs: ["لك", "الفرص", "الأفكار", "المجتمع"],
     prompt: "شارك تحديثًا أو اطلب مساعدة أو صف الشخص الذي تحتاجه…",
     publish: "انشر للمجتمع",
@@ -139,13 +139,13 @@ export function DashboardView({ userId, user, profile, signOutHref }: { userId: 
           <a className="dash-signout" href={signOutHref}><LogOut size={17} />{t.signOut}</a>
         </aside>
         <section className="dash-feed" id="feed">
-          <div className="dash-greeting"><div><p className="kicker">{t.greeting}, {firstName}</p><h1>{arabic ? "ابدأ من حيث يتحرك مجتمع المؤسسين." : "Start where the founder community is moving."}</h1><p>{t.intro}</p></div></div>
+          <div className="dash-greeting"><div><p className="kicker">{t.greeting}, {firstName}</p><h1>{arabic ? "شوف وش يبني مجتمع المؤسسين." : "See what the founder community is building."}</h1><p>{t.intro}</p></div></div>
           <section className="dash-composer"><div className="dash-composer-row"><span className="dash-small-avatar"><UserRound size={19} /></span><textarea value={draft} onChange={(event) => setDraft(event.target.value)} placeholder={t.prompt} rows={2} /></div><div className="dash-composer-actions"><div><a href="/ideas/new" aria-label="Publish an idea"><Lightbulb size={17} /></a><button type="button" aria-label="Post an opportunity" onClick={() => createPost("opportunity")}><BriefcaseBusiness size={17} /></button><button type="button" aria-label="Post to the community" onClick={() => createPost("community")}><CalendarDays size={17} /></button></div><button className="button button-small" type="button" onClick={() => createPost("update")}><Send size={16} />{t.publish}</button></div>{notice && <p className="dash-notice" role="status">{notice}</p>}{error && <p className="workspace-error" role="alert">{error}</p>}</section>
           <div className="dash-feed-tabs" role="tablist" aria-label="Feed filters">{t.tabs.map((tab, index) => <button className={activeTab === index ? "is-active" : ""} type="button" role="tab" aria-selected={activeTab === index} onClick={() => setActiveTab(index)} key={tab}>{tab}</button>)}</div>
           {loading ? <div className="workspace-loading" role="status">{arabic ? "جارٍ تحميل الخلاصة…" : "Loading the community feed…"}</div> : visiblePosts.length ? (
             <div className="feed-list">{visiblePosts.map((post) => (
               <article className="feed-card" key={post.id}>
-                <header>{post.author?.avatar_url ? <img className="feed-avatar" src={post.author.avatar_url} alt="" /> : <span className="feed-avatar"><UserRound size={23} /></span>}<div><strong>{post.author?.full_name ?? (post.author_id === userId ? user.displayName : (arabic ? "عضو كفو" : "Kufuo member"))}</strong><span>{post.author?.headline ?? role} · {new Date(post.created_at).toLocaleDateString(arabic ? "ar-SA" : "en-SA")}</span></div><button className="icon-button" type="button" aria-label="More options"><MoreHorizontal size={19} /></button></header>
+                <header>{post.author?.avatar_url ? <img className="feed-avatar" src={post.author.avatar_url} alt="" /> : <span className="feed-avatar"><UserRound size={23} /></span>}<div><strong>{post.author?.full_name ?? (post.author_id === userId ? user.displayName : (arabic ? "عضو كفو" : "Kufuo member"))}</strong><span>{post.author?.headline ?? role} · {new Date(post.created_at).toLocaleDateString(arabic ? "ar" : "en")}</span></div><button className="icon-button" type="button" aria-label="More options"><MoreHorizontal size={19} /></button></header>
                 <div className="feed-label-row"><span className="feed-label">{post.kind}</span></div>{post.title && <h2>{post.title}</h2>}<p className="feed-body">{post.body}</p>
                 <footer><div className="feed-reactions"><button className={post.reacted ? "is-active" : ""} type="button" onClick={() => react(post)}><Heart size={17} fill={post.reacted ? "currentColor" : "none"} />{t.like} {post.reaction_count ? `(${post.reaction_count})` : ""}</button><button type="button"><MessageCircle size={17} />{t.comment} {post.comment_count ? `(${post.comment_count})` : ""}</button><button className={post.saved ? "is-active" : ""} type="button" onClick={() => save(post)}><Bookmark size={17} fill={post.saved ? "currentColor" : "none"} />{t.save}</button></div>{post.author_id !== userId && <a className="button button-small button-secondary" href={`/profile/${post.author_id}`}>{arabic ? "عرض المؤسس" : "View founder"}<ChevronRight size={16} /></a>}</footer>
               </article>

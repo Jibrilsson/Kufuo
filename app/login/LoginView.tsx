@@ -15,16 +15,16 @@ type AuthAvailability = { google: boolean; linkedin: boolean; phone: boolean; lo
 const copy = {
   en: {
     title: "Welcome to Kufuo",
-    subtitle: "Your next build starts with the right person.",
+    subtitle: "Meet people who are ready to build with the same level of intent.",
     signupTitle: "Create your Kufuo account",
-    signupSubtitle: "Start with a profile that shows what you bring—and what you want to build.",
+    signupSubtitle: "Create a profile that makes your skills, goals, and working preferences clear.",
     google: "Continue with Google",
     linkedin: "Continue with LinkedIn",
     or: "or continue with",
     email: "Email",
     mobile: "Mobile",
     emailAddress: "Email address",
-    phoneNumber: "Saudi mobile number",
+    phoneNumber: "Mobile number with country code",
     password: "Password",
     otp: "One-time code",
     emailOtp: "Email code",
@@ -43,21 +43,23 @@ const copy = {
     privacy: "Your contact details stay private. You decide when to share them.",
     terms: "By continuing, you agree to Kufuo’s Terms and Privacy Policy.",
     loading: "Please wait…",
-    setupRequired: "Setup required",
-    providerNotice: "Mobile OTP is not available yet. Continue with Google, LinkedIn, or email.",
+    setupRequired: "Unavailable",
+    providerNotice: "Some sign-in options are not available yet. Use any enabled option below.",
+    callbackError: "We couldn’t complete that sign-in. Try again or choose another method.",
+    cancelledLogin: "LinkedIn sign-in was cancelled. Try again when you’re ready, or choose another method.",
   },
   ar: {
     title: "حيّاك في كفو",
-    subtitle: "البداية الصح؟ تلقى الشخص الصح.",
+    subtitle: "تعرّف على أشخاص مستعدين يبنون بنفس الجدية.",
     signupTitle: "أنشئ حسابك في كفو",
-    signupSubtitle: "ابدأ بملف يوضّح وش تضيف للفريق، ووش ودك تبني.",
+    signupSubtitle: "أنشئ ملفًا يوضّح مهاراتك وأهدافك وطريقتك في العمل.",
     google: "المتابعة عبر Google",
     linkedin: "المتابعة عبر LinkedIn",
     or: "أو تابع باستخدام",
     email: "البريد الإلكتروني",
     mobile: "الجوال",
     emailAddress: "البريد الإلكتروني",
-    phoneNumber: "رقم الجوال السعودي",
+    phoneNumber: "رقم الجوال مع مفتاح الدولة",
     password: "كلمة المرور",
     otp: "رمز التحقق",
     emailOtp: "رمز البريد",
@@ -76,8 +78,10 @@ const copy = {
     privacy: "بيانات تواصلك تبقى خاصة، وأنت تقرر متى تشاركها.",
     terms: "بمتابعتك، أنت توافق على شروط وسياسة خصوصية كفو.",
     loading: "يرجى الانتظار…",
-    setupRequired: "يتطلب إعدادًا",
-    providerNotice: "تسجيل الجوال غير متاح حاليًا. تابع عبر Google أو LinkedIn أو البريد الإلكتروني.",
+    setupRequired: "غير متاح",
+    providerNotice: "بعض خيارات الدخول غير متاحة حاليًا. استخدم أي خيار متاح أدناه.",
+    callbackError: "ما قدرنا نكمل تسجيل الدخول. حاول مرة ثانية أو اختر طريقة أخرى.",
+    cancelledLogin: "ألغيت تسجيل الدخول عبر LinkedIn. تقدر تحاول مرة ثانية أو تختار طريقة أخرى.",
   },
 } as const;
 
@@ -94,10 +98,16 @@ export function LoginView() {
   const [codeSent, setCodeSent] = useState(false);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
-  const [callbackError] = useState(() => typeof window !== "undefined" && new URLSearchParams(window.location.search).has("error"));
+  const [callbackError] = useState(() => {
+    if (typeof window === "undefined") return "";
+    const query = new URLSearchParams(window.location.search);
+    const hash = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+    return hash.get("error") ?? query.get("error") ?? "";
+  });
   const [availability, setAvailability] = useState<AuthAvailability>({ google: false, linkedin: false, phone: false, loading: true });
   const ar = language === "ar";
   const t = copy[language];
+  const callbackMessage = callbackError === "user_cancelled_login" ? t.cancelledLogin : t.callbackError;
 
   useEffect(() => {
     let active = true;
@@ -219,9 +229,9 @@ export function LoginView() {
           </div>
           {channel === "email" && !codeSent ? <div className="auth-method-toggle"><button type="button" className={emailMethod === "otp" ? "is-active" : ""} onClick={() => setEmailMethod("otp")}>{t.emailOtp}</button><button type="button" className={emailMethod === "password" ? "is-active" : ""} onClick={() => setEmailMethod("password")}>{t.passwordMethod}</button></div> : null}
           <form className="auth-form" onSubmit={submit}>
-            {!codeSent ? <label><span>{channel === "email" ? t.emailAddress : t.phoneNumber}</span><div className="auth-input"><span>{channel === "email" ? <Mail size={18} /> : <Phone size={18} />}</span>{channel === "phone" ? <b dir="ltr">+966</b> : null}<input type={channel === "email" ? "email" : "tel"} inputMode={channel === "email" ? "email" : "tel"} autoComplete={channel === "email" ? "email" : "tel"} value={identifier} onChange={(event) => setIdentifier(event.target.value)} placeholder={channel === "email" ? "name@example.com" : "5X XXX XXXX"} required /></div></label> : <><p className="auth-code-note"><CheckCircle2 size={18} />{t.codeSent}</p><label><span>{t.otp}</span><div className="auth-input auth-code-input"><LockKeyhole size={18} /><input value={code} onChange={(event) => setCode(event.target.value.replace(/\D/g, "").slice(0, 6))} inputMode="numeric" autoComplete="one-time-code" placeholder="000000" minLength={6} required /></div></label></>}
+            {!codeSent ? <label><span>{channel === "email" ? t.emailAddress : t.phoneNumber}</span><div className="auth-input"><span>{channel === "email" ? <Mail size={18} /> : <Phone size={18} />}</span><input type={channel === "email" ? "email" : "tel"} inputMode={channel === "email" ? "email" : "tel"} autoComplete={channel === "email" ? "email" : "tel"} value={identifier} onChange={(event) => setIdentifier(event.target.value)} placeholder={channel === "email" ? "name@example.com" : "+44 7700 900000"} required /></div></label> : <><p className="auth-code-note"><CheckCircle2 size={18} />{t.codeSent}</p><label><span>{t.otp}</span><div className="auth-input auth-code-input"><LockKeyhole size={18} /><input value={code} onChange={(event) => setCode(event.target.value.replace(/\D/g, "").slice(0, 6))} inputMode="numeric" autoComplete="one-time-code" placeholder="000000" minLength={6} required /></div></label></>}
             {channel === "email" && emailMethod === "password" && !codeSent ? <label><span>{t.password}</span><div className="auth-input"><LockKeyhole size={18} /><input type="password" value={password} onChange={(event) => setPassword(event.target.value)} minLength={8} autoComplete={accountMode === "signin" ? "current-password" : "new-password"} required /></div></label> : null}
-            {message || callbackError ? <p className="auth-message" role="status">{message || (ar ? "تعذر إكمال تسجيل الدخول. استخدم رمز التحقق عبر البريد الآن." : "We couldn’t complete that sign in. Use an email verification code for now.")}</p> : null}
+            {message || callbackError ? <p className="auth-message" role="status">{message || callbackMessage}</p> : null}
             <button className="button auth-submit" type="submit" disabled={busy}>{busy ? t.loading : codeSent ? t.verify : channel === "email" && emailMethod === "password" ? accountMode === "signup" ? t.create : t.signIn : accountMode === "signup" ? t.startRegistration : t.send}</button>
           </form>
           {channel === "email" && emailMethod === "password" && !codeSent ? <p className="auth-switch">{accountMode === "signin" ? t.newHere : t.haveAccount} <button type="button" onClick={() => setAccountMode(accountMode === "signin" ? "signup" : "signin")}>{accountMode === "signin" ? t.createLink : t.signInLink}</button></p> : null}
@@ -234,6 +244,8 @@ export function LoginView() {
 }
 
 function normalizePhone(value: string) {
-  const digits = value.replace(/\D/g, "").replace(/^966/, "").replace(/^0/, "");
-  return `+966${digits}`;
+  const compact = value.trim().replace(/[^\d+]/g, "");
+  if (compact.startsWith("+")) return compact;
+  if (compact.startsWith("00")) return `+${compact.slice(2)}`;
+  return `+${compact}`;
 }

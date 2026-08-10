@@ -46,7 +46,6 @@
 .form-card form { display: grid; gap: 18px; margin-top: 30px; }
 .form-card textarea { resize: vertical; }
 .legal-card { max-width: 940px; }
-.legal-review-note { margin: 24px 0; padding: 12px 14px; border: 1px solid #a45f00; border-radius: 10px; background: #fff6e8; color: #744300; font-size: 13px; font-weight: 700; }
 .legal-content { display: grid; gap: 28px; margin-top: 40px; }
 .legal-content section { padding-top: 24px; border-top: 1px solid var(--line); }
 .legal-content h2 { margin: 0 0 10px; font-size: 24px; }

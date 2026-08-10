@@ -1,5 +1,36 @@
 import { LegalPage } from "../_components/LegalPage";
 
 export default function CommunityGuidelinesPage() {
-  return <LegalPage kicker="Community guidelines" title="Serious builders treat each other well." intro="Kufuo is for people exploring genuine cofounder relationships. Every member helps keep the community useful, safe, and respectful."><section><h2>Be honest about what exists</h2><p>Describe your experience, availability, idea stage, validation, funding, and expectations accurately. Do not present an untested concept as an operating company.</p></section><section><h2>Respect time and consent</h2><p>Send relevant introduction requests, accept a decline, and do not move conversations to external channels until both people are comfortable.</p></section><section><h2>Protect confidential information</h2><p>Share only what is necessary before trust is established. Do not copy, publish, or use another member’s private information or idea without clear permission.</p></section><section><h2>No exploitation</h2><p>Kufuo is not a place to disguise freelance work, recruit unpaid staff, collect leads, or pressure people into giving away labor, equity, money, or personal access.</p></section><section><h2>No harassment or discrimination</h2><p>Threats, sexual harassment, hate, intimidation, repeated unwanted contact, and discriminatory treatment are not accepted.</p></section><section><h2>Report concerns</h2><p>Use the reporting controls when something feels unsafe or misleading. Reports are private. Immediate threats should be directed to the appropriate local authorities.</p></section></LegalPage>;
+  return (
+    <LegalPage
+      kicker="Community guidelines"
+      title="Build trust before you build a company."
+      intro="Kufuo is for people exploring genuine cofounder relationships. These guidelines keep introductions useful, conversations respectful, and decisions informed."
+    >
+      <section>
+        <h2>Describe the opportunity honestly</h2>
+        <p>Be accurate about your experience, availability, idea stage, validation, funding, and expectations. Clearly separate what exists today from what you plan to build.</p>
+      </section>
+      <section>
+        <h2>Respect time and consent</h2>
+        <p>Send relevant introduction requests, accept a decline, and avoid repeated contact. Move conversations to another channel only when both people are comfortable doing so.</p>
+      </section>
+      <section>
+        <h2>Protect confidential information</h2>
+        <p>Share only what is necessary before trust is established. Never copy, publish, or use another member’s private information, product material, or idea without clear permission.</p>
+      </section>
+      <section>
+        <h2>Do not exploit other members</h2>
+        <p>Do not disguise freelance work as a cofounder opportunity, recruit unpaid staff, collect leads, or pressure anyone to provide labour, equity, money, credentials, or personal access.</p>
+      </section>
+      <section>
+        <h2>No harassment or discrimination</h2>
+        <p>Threats, sexual harassment, hate speech, intimidation, discriminatory treatment, and repeated unwanted contact are not allowed.</p>
+      </section>
+      <section>
+        <h2>Report concerns</h2>
+        <p>Use the reporting controls if something appears unsafe, deceptive, or abusive. Reports are private and reviewed for appropriate action. Contact local emergency services if there is an immediate threat to anyone’s safety.</p>
+      </section>
+    </LegalPage>
+  );
 }
