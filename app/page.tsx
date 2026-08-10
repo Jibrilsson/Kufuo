@@ -254,6 +254,13 @@ export default function Home() {
   const primaryAuthLabel = signedIn ? t.dashboard : t.join;
 
   useEffect(() => {
+    const frame = window.requestAnimationFrame(() => {
+      if (new URLSearchParams(window.location.search).get("lang") === "ar") setLanguage("ar");
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, []);
+
+  useEffect(() => {
     document.documentElement.lang = language;
     document.documentElement.dir = arabic ? "rtl" : "ltr";
   }, [language, arabic]);
