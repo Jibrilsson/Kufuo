@@ -21,7 +21,9 @@ import {
   Target,
   UserRound,
 } from "lucide-react";
+import { FaLinkedin } from "react-icons/fa";
 import { saveOwnProfile } from "../lib/kufuo/client";
+import { normalizeLinkedinUrl, profileStrength } from "../lib/kufuo/profile";
 import { emptyProfile, type FounderProfile } from "../lib/kufuo/types";
 
 type Language = "en" | "ar";
@@ -74,7 +76,7 @@ const copy = {
     privacyValue: "Contact details remain private",
     secure: "Your login is protected and your contact details remain private.",
     preview: "Preview public profile",
-    fields: { role: "Professional headline", location: "Location", availability: "Availability", intro: "Short introduction", about: "About you" },
+    fields: { role: "Professional headline", location: "Location", availability: "Availability", intro: "Short introduction", about: "About you", linkedin: "LinkedIn profile (optional)" },
   },
   ar: {
     dashboard: "لوحة التحكم",
@@ -123,7 +125,7 @@ const copy = {
     privacyValue: "تبقى بيانات التواصل خاصة",
     secure: "تسجيل دخولك محمي وتبقى بيانات تواصلك خاصة.",
     preview: "معاينة الملف العام",
-    fields: { role: "العنوان المهني", location: "الموقع", availability: "التفرغ", intro: "مقدمة قصيرة", about: "نبذة عنك" },
+    fields: { role: "العنوان المهني", location: "الموقع", availability: "التفرغ", intro: "مقدمة قصيرة", about: "نبذة عنك", linkedin: "رابط LinkedIn (اختياري)" },
   },
 } as const;
 
@@ -132,6 +134,7 @@ type ProfileForm = {
   headline: string;
   city: string;
   availability: string;
+  linkedinUrl: string;
   bio: string;
   skills: string;
   industries: string;
@@ -151,6 +154,7 @@ function profileToForm(profile: FounderProfile): ProfileForm {
     headline: profile.headline ?? "",
     city: profile.city ?? "",
     availability: profile.availability ?? "",
+    linkedinUrl: profile.linkedin_url ?? "",
     bio: profile.bio ?? "",
     skills: profile.skills.join(", "),
     industries: profile.industries.join(", "),
@@ -180,8 +184,14 @@ export function AccountView({ userId, user, initialProfile, signOutHref }: { use
   const [details, setDetails] = useState<ProfileForm>(() => profileToForm(startingProfile));
 
   useEffect(() => {
+    const stored = window.localStorage.getItem("kufuo:language");
+    if (stored === "ar" || stored === "en") setLanguage(stored);
+  }, []);
+
+  useEffect(() => {
     document.documentElement.lang = language;
     document.documentElement.dir = arabic ? "rtl" : "ltr";
+    window.localStorage.setItem("kufuo:language", language);
   }, [language, arabic]);
 
   function switchLanguage() {
@@ -202,19 +212,28 @@ export function AccountView({ userId, user, initialProfile, signOutHref }: { use
       setError(arabic ? "أكمل الحقول الأساسية قبل حفظ الملف." : "Complete the required founder fields before saving.");
       return;
     }
+    const linkedinUrl = normalizeLinkedinUrl(details.linkedinUrl);
+    if (details.linkedinUrl.trim() && !linkedinUrl) {
+      setError(arabic ? "أدخل رابط LinkedIn صحيحًا." : "Enter a valid LinkedIn profile URL.");
+      return;
+    }
     setSaving(true);
     try {
-      const strength = Math.min(100, 40 + [details.industries, details.languages, details.startupStage, details.workingStyle, details.decisionStyle, details.equityApproach].filter((value) => value.trim()).length * 10);
+      const skills = splitList(details.skills);
+      const industries = splitList(details.industries);
+      const languages = splitList(details.languages);
+      const strength = profileStrength({ fullName: details.fullName, headline: details.headline, city: details.city, bio: details.bio, skills, industries, languages, lookingFor: details.lookingFor, commitment: details.commitment, startupStage: details.startupStage, workingStyle: details.workingStyle, decisionStyle: details.decisionStyle, equityApproach: details.equityApproach, linkedinUrl });
       const saved = await saveOwnProfile(userId, {
         full_name: details.fullName.trim(),
         headline: details.headline.trim(),
         role: details.headline.trim(),
         city: details.city.trim(),
         availability: details.availability.trim() || null,
+        linkedin_url: linkedinUrl,
         bio: details.bio.trim(),
-        skills: splitList(details.skills),
-        industries: splitList(details.industries),
-        languages: splitList(details.languages),
+        skills,
+        industries,
+        languages,
         profile_type: details.profileType,
         looking_for: details.lookingFor.trim(),
         startup_stage: details.startupStage.trim() || null,
@@ -224,7 +243,7 @@ export function AccountView({ userId, user, initialProfile, signOutHref }: { use
         equity_approach: details.equityApproach.trim() || null,
         onboarding_complete: true,
         profile_strength: strength,
-        is_visible: true,
+        is_visible: profile.is_visible,
       });
       setProfile(saved);
       setEditing(false);
@@ -237,13 +256,14 @@ export function AccountView({ userId, user, initialProfile, signOutHref }: { use
     }
   }
 
-  const input = (key: keyof ProfileForm, label: string, required = false) => (
-    <label className="member-field"><span>{label}{required ? " *" : ""}</span><input value={details[key]} onChange={(event) => setDetails({ ...details, [key]: event.target.value })} /></label>
+  const input = (key: keyof ProfileForm, label: string, required = false, type = "text") => (
+    <label className="member-field"><span>{label}{required ? " *" : ""}</span><input type={type} value={details[key]} onChange={(event) => setDetails({ ...details, [key]: event.target.value })} /></label>
   );
 
   const skills = splitList(details.skills);
   const industries = splitList(details.industries);
   const completion = profile.onboarding_complete ? profile.profile_strength : 20;
+  const linkedinUrl = normalizeLinkedinUrl(details.linkedinUrl);
 
   return (
     <main className="member-profile-page" dir={arabic ? "rtl" : "ltr"}>
@@ -255,7 +275,7 @@ export function AccountView({ userId, user, initialProfile, signOutHref }: { use
 
       <section className="member-hero section-frame">
         <div className="member-avatar"><UserRound size={54} /></div>
-        <div className="member-identity"><p className="kicker">{profile.onboarding_complete ? t.kicker : (arabic ? "ابدأ ملفك" : "Build your founder profile")}</p><span className="account-verified"><ShieldCheck size={16} />{t.verified}</span>{editing ? <div className="member-edit-grid">{input("fullName", arabic ? "الاسم" : "Full name", true)}{input("headline", t.fields.role, true)}</div> : <><h1>{details.fullName || user.displayName}</h1><h2>{details.headline || (arabic ? "أضف عنوانك المهني" : "Add your professional headline")}</h2></>}<div className="member-meta"><span><MapPin size={16} />{details.city || t.location}</span><span><Clock3 size={16} />{details.availability || t.availability}</span><span><Languages size={16} />{details.languages || t.language}</span></div>{editing ? <div className="member-edit-grid">{input("city", t.fields.location, true)}{input("availability", t.fields.availability)}<label className="member-field"><span>{arabic ? "ما الذي تقدمه؟" : "What do you bring?"} *</span><select value={details.profileType} onChange={(event) => setDetails({ ...details, profileType: event.target.value as ProfileForm["profileType"] })}><option value="idea">{arabic ? "لدي فكرة" : "I bring an idea"}</option><option value="skill">{arabic ? "لدي مهارة" : "I bring a skill"}</option><option value="both">{arabic ? "الاثنان" : "Both"}</option></select></label></div> : <p className="member-intro">{details.bio}</p>}<div className="member-actions">{editing ? <><button className="button" type="button" onClick={saveProfile} disabled={saving}><Save size={17} />{saving ? (arabic ? "جارٍ الحفظ…" : "Saving…") : t.save}</button>{profile.onboarding_complete && <button className="button button-secondary" type="button" onClick={cancelEdit}>{t.cancel}</button>}</> : <button className="button" type="button" onClick={() => setEditing(true)}><Pencil size={17} />{t.edit}</button>}<a className="button button-secondary" href={`/profile/${userId}`}>{t.preview}<ChevronRight size={17} /></a></div>{error && <p className="member-save-error" role="alert">{error}</p>}{savedNotice && <p className="member-save-notice" role="status"><Check size={16} />{t.saved}</p>}</div>
+        <div className="member-identity"><p className="kicker">{profile.onboarding_complete ? t.kicker : (arabic ? "ابدأ ملفك" : "Build your founder profile")}</p><span className="account-verified"><ShieldCheck size={16} />{t.verified}</span>{editing ? <div className="member-edit-grid">{input("fullName", arabic ? "الاسم" : "Full name", true)}{input("headline", t.fields.role, true)}<div className="member-linkedin-field">{input("linkedinUrl", t.fields.linkedin, false, "url")}</div></div> : <><h1>{details.fullName || user.displayName}</h1><h2>{details.headline || (arabic ? "أضف عنوانك المهني" : "Add your professional headline")}</h2>{linkedinUrl && <a className="member-linkedin-link" href={linkedinUrl} target="_blank" rel="noopener noreferrer"><FaLinkedin aria-hidden="true" />LinkedIn</a>}</>}<div className="member-meta"><span><MapPin size={16} />{details.city || t.location}</span><span><Clock3 size={16} />{details.availability || t.availability}</span><span><Languages size={16} />{details.languages || t.language}</span></div>{editing ? <div className="member-edit-grid">{input("city", t.fields.location, true)}{input("availability", t.fields.availability)}<label className="member-field"><span>{arabic ? "ما الذي تقدمه؟" : "What do you bring?"} *</span><select value={details.profileType} onChange={(event) => setDetails({ ...details, profileType: event.target.value as ProfileForm["profileType"] })}><option value="idea">{arabic ? "لدي فكرة" : "I bring an idea"}</option><option value="skill">{arabic ? "لدي مهارة" : "I bring a skill"}</option><option value="both">{arabic ? "الاثنان" : "Both"}</option></select></label></div> : <p className="member-intro">{details.bio}</p>}<div className="member-actions">{editing ? <><button className="button" type="button" onClick={saveProfile} disabled={saving}><Save size={17} />{saving ? (arabic ? "جارٍ الحفظ…" : "Saving…") : t.save}</button>{profile.onboarding_complete && <button className="button button-secondary" type="button" onClick={cancelEdit}>{t.cancel}</button>}</> : <button className="button" type="button" onClick={() => setEditing(true)}><Pencil size={17} />{t.edit}</button>}<a className="button button-secondary" href={`/profile/${userId}`}>{t.preview}<ChevronRight size={17} /></a></div>{error && <p className="member-save-error" role="alert">{error}</p>}{savedNotice && <p className="member-save-notice" role="status"><Check size={16} />{t.saved}</p>}</div>
       </section>
 
       <div className="member-content section-frame">

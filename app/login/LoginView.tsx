@@ -133,6 +133,17 @@ export function LoginView() {
     return value.startsWith("/") ? value : "/dashboard";
   }
 
+  async function destinationAfterAuthentication(supabase: ReturnType<typeof createClient>) {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return destination();
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("onboarding_complete")
+      .eq("id", user.id)
+      .maybeSingle();
+    return profile?.onboarding_complete ? destination() : "/onboarding";
+  }
+
   async function social(provider: "google" | "linkedin_oidc") {
     const enabled = provider === "google" ? availability.google : availability.linkedin;
     if (!enabled) {
@@ -161,7 +172,7 @@ export function LoginView() {
         ? await supabase.auth.verifyOtp({ email: identifier.trim(), token: code.trim(), type: "email" })
         : await supabase.auth.verifyOtp({ phone: normalizePhone(identifier), token: code.trim(), type: "sms" });
       if (result.error) setMessage(result.error.message);
-      else window.location.assign(destination());
+      else window.location.assign(await destinationAfterAuthentication(supabase));
       setBusy(false);
       return;
     }
@@ -172,7 +183,7 @@ export function LoginView() {
         ? await supabase.auth.signUp(credentials)
         : await supabase.auth.signInWithPassword(credentials);
       if (result.error) setMessage(result.error.message);
-      else if (result.data.session) window.location.assign(destination());
+      else if (result.data.session) window.location.assign(await destinationAfterAuthentication(supabase));
       else setMessage(ar ? "راجع بريدك لتأكيد الحساب." : "Check your email to confirm your account.");
       setBusy(false);
       return;

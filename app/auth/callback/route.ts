@@ -12,7 +12,14 @@ export async function GET(request: Request) {
   if (code) {
     const supabase = await createClient();
     const { error } = await supabase.auth.exchangeCodeForSession(code);
-    if (!error) return NextResponse.redirect(new URL(next, redirectOrigin));
+    if (!error) {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: profile } = await supabase.from("profiles").select("onboarding_complete").eq("id", user.id).maybeSingle();
+        if (!profile?.onboarding_complete) return NextResponse.redirect(new URL("/onboarding", redirectOrigin));
+      }
+      return NextResponse.redirect(new URL(next, redirectOrigin));
+    }
   }
 
   return NextResponse.redirect(new URL("/login?error=callback", redirectOrigin));
