@@ -30,12 +30,15 @@ import { createClient } from "./lib/supabase/client";
 
 type Language = "en" | "ar";
 type FilterKey = "all" | "tech" | "product" | "business";
+type AuthState = "loading" | "signed-in" | "signed-out";
 
 const content = {
   en: {
     nav: ["Discover", "How it works", "Founder journey", "Community"],
     signIn: "Log in",
     join: "Join the community",
+    profile: "My profile",
+    dashboard: "Dashboard",
     eyebrow: "For people serious about building together.",
     heroTitle: "Find the right person to build what comes next.",
     heroBody: "Bring an idea or bring the skills it needs. Kufuo helps you meet compatible cofounders, compare working preferences, and test the partnership before making a long-term commitment.",
@@ -127,6 +130,8 @@ const content = {
     nav: ["اكتشف", "كيف تعمل المنصة", "رحلة المؤسس", "المجتمع"],
     signIn: "دخول",
     join: "انضم للمجتمع",
+    profile: "ملفي",
+    dashboard: "لوحة التحكم",
     eyebrow: "للي ناوين يبنون بجد.",
     heroTitle: "لقّ الشخص المناسب، وابنوا القادم سوا.",
     heroBody: "سواء جاي بفكرة أو بمهارة، كفو يساعدك تلقى شريك مؤسس يكمّلك، وتقارنون أسلوب العمل والتوقعات، وتجربون الشراكة قبل الالتزام الطويل.",
@@ -235,17 +240,45 @@ export default function Home() {
   const [email, setEmail] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
+  const [authState, setAuthState] = useState<AuthState>("loading");
   const t = content[language];
   const dashboardHref = "/login?returnTo=%2Fdashboard";
   const registrationHref = "/login?mode=signup&returnTo=%2Faccount";
   const arabic = language === "ar";
   const l = arabic ? 1 : 0;
   const Arrow = arabic ? ArrowLeft : ArrowRight;
+  const signedIn = authState === "signed-in";
+  const secondaryAuthHref = signedIn ? "/account" : dashboardHref;
+  const primaryAuthHref = signedIn ? "/dashboard" : registrationHref;
+  const secondaryAuthLabel = signedIn ? t.profile : t.signIn;
+  const primaryAuthLabel = signedIn ? t.dashboard : t.join;
 
   useEffect(() => {
     document.documentElement.lang = language;
     document.documentElement.dir = arabic ? "rtl" : "ltr";
   }, [language, arabic]);
+
+  useEffect(() => {
+    const supabase = createClient();
+    let active = true;
+
+    supabase.auth.getUser()
+      .then(({ data }) => {
+        if (active) setAuthState(data.user ? "signed-in" : "signed-out");
+      })
+      .catch(() => {
+        if (active) setAuthState("signed-out");
+      });
+
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (active) setAuthState(session?.user ? "signed-in" : "signed-out");
+    });
+
+    return () => {
+      active = false;
+      listener.subscription.unsubscribe();
+    };
+  }, []);
 
   const visibleProfiles = useMemo(() => profiles.filter((profile) => activeFilter === "all" || profile.filter === activeFilter), [activeFilter]);
 
@@ -278,12 +311,14 @@ export default function Home() {
         <a className="brand" href="#top" aria-label="Kufuo home"><span className="brand-mark"><img src="/kufuo-logo.svg" alt="Kufuo" /></span></a>
         <nav className={`desktop-nav ${menuOpen ? "is-open" : ""}`} aria-label="Primary navigation">
           {t.nav.map((item, index) => <a key={item} href={["#discover", "#how", "#journey", "#community"][index]} onClick={() => setMenuOpen(false)}>{item}</a>)}
-          <div className="mobile-auth-links"><a className="button button-secondary" href={dashboardHref}>{t.signIn}</a><a className="button button-lime" href={registrationHref}>{t.join}</a></div>
+          <div className={`mobile-auth-links ${authState === "loading" ? "is-loading" : ""}`} aria-busy={authState === "loading"}><a className="button button-secondary" href={secondaryAuthHref}>{secondaryAuthLabel}</a><a className="button button-lime" href={primaryAuthHref}>{primaryAuthLabel}</a></div>
         </nav>
         <div className="header-actions">
           <button className="language-button" type="button" onClick={() => setLanguage(arabic ? "en" : "ar")} aria-label={arabic ? "Switch to English" : "التبديل إلى العربية"}><Languages size={18} /><span>{arabic ? "English" : "العربية"}</span></button>
-          <a className="button button-small button-secondary header-sign-in" href={dashboardHref}>{t.signIn}</a>
-          <a className="button button-small" href={registrationHref}>{t.join}</a>
+          <div className={`header-auth-links ${authState === "loading" ? "is-loading" : ""}`} aria-busy={authState === "loading"}>
+            <a className="button button-small button-secondary header-sign-in" href={secondaryAuthHref}>{secondaryAuthLabel}</a>
+            <a className="button button-small" href={primaryAuthHref}>{primaryAuthLabel}</a>
+          </div>
           <button className="menu-button" type="button" onClick={() => setMenuOpen((value) => !value)} aria-expanded={menuOpen} aria-label={menuOpen ? "Close navigation" : "Open navigation"}>{menuOpen ? <X size={22} /> : <Menu size={22} />}</button>
         </div>
       </header>

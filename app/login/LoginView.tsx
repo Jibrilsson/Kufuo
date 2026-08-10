@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ArrowLeft, CheckCircle2, Languages, LockKeyhole, Mail, Phone, ShieldCheck } from "lucide-react";
 import { FaGoogle, FaLinkedin } from "react-icons/fa";
 import { createClient } from "../lib/supabase/client";
-import { supabasePublishableKey, supabaseUrl } from "../lib/supabase/config";
+import { authRedirectOrigin, supabasePublishableKey, supabaseUrl } from "../lib/supabase/config";
 
 type Language = "en" | "ar";
 type Channel = "email" | "phone";
@@ -142,7 +142,7 @@ export function LoginView() {
     setBusy(true);
     setMessage("");
     const supabase = createClient();
-    const callback = `${window.location.origin}/auth/callback?next=${encodeURIComponent(destination())}`;
+    const callback = `${authRedirectOrigin(window.location.origin)}/auth/callback?next=${encodeURIComponent(destination())}`;
     const { error } = await supabase.auth.signInWithOAuth({ provider, options: { redirectTo: callback } });
     if (error) {
       setMessage(error.message);
@@ -178,7 +178,7 @@ export function LoginView() {
       return;
     }
 
-    const emailCallback = `${window.location.origin}/auth/callback?next=${encodeURIComponent(destination())}`;
+    const emailCallback = `${authRedirectOrigin(window.location.origin)}/auth/callback?next=${encodeURIComponent(destination())}`;
     const result = channel === "email"
       ? await supabase.auth.signInWithOtp({ email: identifier.trim(), options: { shouldCreateUser: accountMode === "signup", emailRedirectTo: emailCallback } })
       : await supabase.auth.signInWithOtp({ phone: normalizePhone(identifier), options: { shouldCreateUser: accountMode === "signup" } });

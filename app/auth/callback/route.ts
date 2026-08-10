@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { authRedirectOrigin } from "../../lib/supabase/config";
 import { createClient } from "../../lib/supabase/server";
 
 export async function GET(request: Request) {
@@ -6,12 +7,13 @@ export async function GET(request: Request) {
   const code = url.searchParams.get("code");
   const requestedNext = url.searchParams.get("next") ?? "/dashboard";
   const next = requestedNext.startsWith("/") ? requestedNext : "/dashboard";
+  const redirectOrigin = authRedirectOrigin(url.origin);
 
   if (code) {
     const supabase = await createClient();
     const { error } = await supabase.auth.exchangeCodeForSession(code);
-    if (!error) return NextResponse.redirect(new URL(next, url.origin));
+    if (!error) return NextResponse.redirect(new URL(next, redirectOrigin));
   }
 
-  return NextResponse.redirect(new URL("/login?error=callback", url.origin));
+  return NextResponse.redirect(new URL("/login?error=callback", redirectOrigin));
 }

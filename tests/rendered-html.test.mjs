@@ -34,6 +34,23 @@ test("mirrors forward chevrons throughout RTL interfaces", async () => {
   assert.match(styles, /\[dir=["']rtl["']\]\s+\.lucide-chevron-right\s*\{[^}]*transform:\s*scaleX\(-1\)/i);
 });
 
+test("keeps the home auth state in sync and pins OAuth redirects to Kufuo", async () => {
+  const [home, login, callback, config] = await Promise.all([
+    readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/login/LoginView.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../app/auth/callback/route.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/lib/supabase/config.ts", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(home, /supabase\.auth\.getUser\(\)/);
+  assert.match(home, /supabase\.auth\.onAuthStateChange/);
+  assert.match(home, /signedIn \? "\/account"/);
+  assert.match(home, /signedIn \? "\/dashboard"/);
+  assert.match(login, /authRedirectOrigin\(window\.location\.origin\)/);
+  assert.match(callback, /authRedirectOrigin\(url\.origin\)/);
+  assert.match(config, /NEXT_PUBLIC_SITE_URL \?\? "https:\/\/kufuo\.com"/);
+});
+
 test("ships the protected product routes and RLS-backed core data model", async () => {
   const requiredRoutes = [
     "../app/dashboard/page.tsx",
