@@ -44,7 +44,7 @@ const copy = {
     terms: "By continuing, you agree to Kufuo’s Terms and Privacy Policy.",
     loading: "Please wait…",
     setupRequired: "Setup required",
-    providerNotice: "Google, LinkedIn, and mobile login are still being connected. Use an email verification code now.",
+    providerNotice: "Mobile OTP is not available yet. Continue with Google, LinkedIn, or email.",
   },
   ar: {
     title: "حيّاك في كفو",
@@ -77,7 +77,7 @@ const copy = {
     terms: "بمتابعتك، أنت توافق على شروط وسياسة خصوصية كفو.",
     loading: "يرجى الانتظار…",
     setupRequired: "يتطلب إعدادًا",
-    providerNotice: "يجري ربط Google وLinkedIn وتسجيل الجوال. استخدم رمز التحقق عبر البريد الآن.",
+    providerNotice: "تسجيل الجوال غير متاح حاليًا. تابع عبر Google أو LinkedIn أو البريد الإلكتروني.",
   },
 } as const;
 
