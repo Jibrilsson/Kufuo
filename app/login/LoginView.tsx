@@ -85,7 +85,9 @@ export function LoginView() {
   const [language, setLanguage] = useState<Language>("en");
   const [channel, setChannel] = useState<Channel>("email");
   const [emailMethod, setEmailMethod] = useState<EmailMethod>("otp");
-  const [accountMode, setAccountMode] = useState<"signin" | "signup">("signin");
+  const [accountMode, setAccountMode] = useState<"signin" | "signup">(() =>
+    typeof window !== "undefined" && new URLSearchParams(window.location.search).get("mode") === "signup" ? "signup" : "signin"
+  );
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [code, setCode] = useState("");
@@ -96,12 +98,6 @@ export function LoginView() {
   const [availability, setAvailability] = useState<AuthAvailability>({ google: false, linkedin: false, phone: false, loading: true });
   const ar = language === "ar";
   const t = copy[language];
-
-  useEffect(() => {
-    if (new URLSearchParams(window.location.search).get("mode") === "signup") {
-      setAccountMode("signup");
-    }
-  }, []);
 
   useEffect(() => {
     let active = true;

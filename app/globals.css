@@ -19,6 +19,51 @@
   --peach: #f4c79a;
 }
 
+/* Real product states */
+.member-edit-grid, .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; width: 100%; margin: 14px 0; }
+.member-field, .form-card form > label, .form-grid label { display: grid; gap: 7px; color: var(--ink); font-size: 13px; font-weight: 700; }
+.member-field input, .member-field select, .form-card input, .form-card select, .form-card textarea { width: 100%; min-height: 48px; padding: 12px 14px; border: 2px solid var(--ink); border-radius: 13px; background: #fff; color: var(--ink); font: inherit; font-weight: 520; }
+.member-field select, .form-card select { appearance: auto; }
+.member-save-error, .workspace-error { margin: 12px 0; padding: 11px 13px; border: 1px solid #b42318; border-radius: 10px; background: #fff1f0; color: #8a1c14; font-size: 13px; font-weight: 650; }
+.workspace-loading { padding: 42px 22px; border: 1px solid var(--line); border-radius: 16px; color: var(--ink-secondary); text-align: center; }
+.workspace-empty { display: grid; justify-items: start; gap: 11px; padding: 34px; border: 2px solid var(--ink); border-radius: 18px; background: #fff; }
+.workspace-empty h2, .workspace-empty p { margin: 0; }
+.workspace-empty p { max-width: 620px; color: var(--ink-secondary); line-height: 1.65; }
+.discover-avatar-fallback { display: grid; width: 72px; height: 72px; place-items: center; border: 2px solid var(--ink); border-radius: 50%; background: var(--peach); }
+.connection-message { max-width: 620px; margin-top: 8px; color: var(--ink-secondary); font-size: 13px; line-height: 1.55; }
+.introduction-action { display: grid; gap: 12px; max-width: 680px; margin-top: 18px; }
+.introduction-action textarea { width: 100%; padding: 14px; border: 2px solid var(--ink); border-radius: 14px; resize: vertical; font: inherit; }
+.member-avatar img { width: 100%; height: 100%; border-radius: inherit; object-fit: cover; }
+.dash-composer-actions > div > a { display: inline-grid; width: 36px; height: 36px; place-items: center; border: 0; border-radius: 50%; color: var(--ink); }
+.dash-composer-actions > div > a:hover { background: var(--lime); }
+
+.form-page, .legal-page { min-height: 100vh; padding: 24px; background: #fff; color: var(--ink); }
+.form-page-header, .legal-header { display: flex; align-items: center; justify-content: space-between; max-width: 1160px; margin: 0 auto 34px; padding-bottom: 18px; border-bottom: 1px solid var(--line); }
+.form-page-header > a:first-child, .legal-header > a:first-child { display: inline-flex; align-items: center; gap: 8px; color: var(--ink); font-weight: 700; text-decoration: none; }
+.form-card, .legal-card { max-width: 860px; margin: 0 auto; padding: clamp(26px, 5vw, 64px); border: 2px solid var(--ink); border-radius: 22px; background: #fff; box-shadow: 7px 7px 0 var(--ink); }
+.form-card > h1, .legal-card > h1 { max-width: 760px; margin: 10px 0 14px; font-size: clamp(38px, 6vw, 70px); line-height: .98; letter-spacing: -.055em; }
+.form-card > p, .legal-intro { max-width: 700px; color: var(--ink-secondary); font-size: 18px; line-height: 1.65; }
+.form-card form { display: grid; gap: 18px; margin-top: 30px; }
+.form-card textarea { resize: vertical; }
+.legal-card { max-width: 940px; }
+.legal-review-note { margin: 24px 0; padding: 12px 14px; border: 1px solid #a45f00; border-radius: 10px; background: #fff6e8; color: #744300; font-size: 13px; font-weight: 700; }
+.legal-content { display: grid; gap: 28px; margin-top: 40px; }
+.legal-content section { padding-top: 24px; border-top: 1px solid var(--line); }
+.legal-content h2 { margin: 0 0 10px; font-size: 24px; }
+.legal-content p { margin: 0; color: #343434; line-height: 1.75; }
+.legal-content a { color: var(--ink); font-weight: 750; }
+.legal-card > footer { display: flex; justify-content: space-between; gap: 20px; margin-top: 46px; padding-top: 20px; border-top: 2px solid var(--ink); font-size: 13px; }
+.legal-card > footer a { color: var(--ink); font-weight: 750; }
+
+@media (max-width: 720px) {
+  .member-edit-grid, .form-grid { grid-template-columns: 1fr; }
+  .form-page, .legal-page { padding: 14px; }
+  .form-card, .legal-card { padding: 24px 18px; border-radius: 17px; box-shadow: 4px 4px 0 var(--ink); }
+  .form-card > h1, .legal-card > h1 { font-size: 40px; }
+  .legal-card > footer { flex-direction: column; }
+  .workspace-empty { padding: 24px 18px; }
+}
+
 /* Kufuo product system — flat, high-contrast, illustration-led */
 :root {
   --kufuo-radius-sm: 10px;

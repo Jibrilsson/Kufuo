@@ -26,6 +26,7 @@ import {
   X,
   Zap,
 } from "lucide-react";
+import { createClient } from "./lib/supabase/client";
 
 type Language = "en" | "ar";
 type FilterKey = "all" | "tech" | "product" | "business";
@@ -231,6 +232,9 @@ export default function Home() {
   const [location, setLocation] = useState("all");
   const [expertise, setExpertise] = useState<FilterKey>("all");
   const [submitted, setSubmitted] = useState(false);
+  const [email, setEmail] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
   const t = content[language];
   const dashboardHref = "/login?returnTo=%2Fdashboard";
   const registrationHref = "/login?mode=signup&returnTo=%2Faccount";
@@ -251,9 +255,15 @@ export default function Home() {
     document.querySelector("#join")?.scrollIntoView({ behavior: "smooth" });
   }
 
-  function submit(event: FormEvent<HTMLFormElement>) {
+  async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (path) setSubmitted(true);
+    if (!path || !email.trim()) return;
+    setSubmitting(true);
+    setSubmitError("");
+    const { error } = await createClient().from("waitlist").insert({ email: email.trim().toLowerCase(), path, source: "landing_page" });
+    setSubmitting(false);
+    if (error && error.code !== "23505") { setSubmitError(error.message); return; }
+    setSubmitted(true);
   }
 
   function searchFounders(event: FormEvent<HTMLFormElement>) {
@@ -383,12 +393,12 @@ export default function Home() {
         <div className="cta-form-area">
           <div className="path-toggle"><button className={path === "idea" ? "is-selected" : ""} type="button" onClick={() => setPath("idea")}><Lightbulb size={18} />{t.haveIdea}</button><button className={path === "skill" ? "is-selected" : ""} type="button" onClick={() => setPath("skill")}><BriefcaseBusiness size={18} />{t.joinIdea}</button></div>
           <p className="path-selection" aria-live="polite">{path === "idea" ? t.selectedIdea : path === "skill" ? t.selectedSkill : t.choosePath}</p>
-          <form onSubmit={submit} className="invite-form"><label className="sr-only" htmlFor="email">{t.emailPlaceholder}</label><input id="email" type="email" placeholder={t.emailPlaceholder} required /><button className="button" type="submit" disabled={!path}>{t.requestInvite}<Arrow size={18} /></button></form>
-          {submitted && <p className="confirmation" role="status"><CheckCircle2 size={18} />{t.confirmation}</p>}<p className="prototype-note">{t.note}</p>
+          <form onSubmit={submit} className="invite-form"><label className="sr-only" htmlFor="email">{t.emailPlaceholder}</label><input id="email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder={t.emailPlaceholder} required /><button className="button" type="submit" disabled={!path || submitting}>{submitting ? (arabic ? "جارٍ الحفظ…" : "Saving…") : t.requestInvite}<Arrow size={18} /></button></form>
+          {submitted && <p className="confirmation" role="status"><CheckCircle2 size={18} />{arabic ? "تم حفظ طلبك. بنكون على تواصل." : "Your request is saved. We’ll be in touch."}</p>}{submitError && <p className="workspace-error" role="alert">{submitError}</p>}<p className="prototype-note">{t.note}</p>
         </div>
       </section>
 
-      <footer className="site-footer section-frame"><div><a className="brand" href="#top" aria-label="Kufuo home"><span className="brand-mark"><img src="/kufuo-logo.svg" alt="Kufuo" /></span></a><p>{t.footer}</p></div><nav><a href="#community">{arabic ? "الأمان" : "Safety"}</a><a href="#community">{arabic ? "المجتمع" : "Community"}</a><a href="#">{arabic ? "الخصوصية" : "Privacy"}</a><a href="#">{arabic ? "الشروط" : "Terms"}</a></nav><span>© 2026 Kufuo | كفو</span></footer>
+      <footer className="site-footer section-frame"><div><a className="brand" href="#top" aria-label="Kufuo home"><span className="brand-mark"><img src="/kufuo-logo.svg" alt="Kufuo" /></span></a><p>{t.footer}</p></div><nav><a href="/community-guidelines">{arabic ? "الأمان" : "Safety"}</a><a href="#community">{arabic ? "المجتمع" : "Community"}</a><a href="/privacy">{arabic ? "الخصوصية" : "Privacy"}</a><a href="/terms">{arabic ? "الشروط" : "Terms"}</a></nav><span>© 2026 Kufuo | كفو</span></footer>
     </main>
   );
 }

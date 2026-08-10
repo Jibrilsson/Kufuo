@@ -5,4 +5,4 @@ import { getProtectedUser } from "../_components/protected-page";
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Notifications — Kufuo | كفو", description: "Founder matches, introductions, messages, and useful community activity." };
 
-export default async function NotificationsPage() { const user = await getProtectedUser("/notifications"); return <MemberWorkspace mode="notifications" user={{ displayName: user.displayName, email: user.email }} signOutHref="/auth/signout" />; }
+export default async function NotificationsPage() { const user = await getProtectedUser("/notifications"); return <MemberWorkspace mode="notifications" userId={user.userId} user={{ displayName: user.displayName, email: user.email }} signOutHref="/auth/signout" />; }

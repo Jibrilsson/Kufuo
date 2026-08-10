@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import {
   Bell,
   Bookmark,
-  BriefcaseBusiness,
   Check,
   ChevronRight,
   CircleUserRound,
@@ -22,24 +22,27 @@ import {
   Send,
   Settings,
   ShieldCheck,
-  SlidersHorizontal,
   Sparkles,
   UserCheck,
   UserRound,
-  UserRoundPlus,
   UsersRound,
   X,
 } from "lucide-react";
+import {
+  loadConnections,
+  loadConversations,
+  loadDiscovery,
+  loadNotifications,
+  loadSettings,
+  markNotificationsRead,
+  respondToIntroduction,
+  saveSettings,
+  sendConversationMessage,
+  toggleSavedProfile,
+} from "../lib/kufuo/client";
+import type { ConnectionRequest, Conversation, FounderProfile, Idea, Language, MemberSettings, Message, Notification } from "../lib/kufuo/types";
 
 type Mode = "discover" | "messages" | "connections" | "notifications" | "settings";
-type Language = "en" | "ar";
-type SettingsState = { matching: boolean; introductions: boolean; community: boolean; profileVisible: boolean; cityVisible: boolean };
-
-const founders = [
-  { id: 1, name: "Amir N.", role: { en: "Technical founder", ar: "مؤسس تقني" }, city: { en: "Riyadh", ar: "الرياض" }, fit: "92%", image: "/profile-amir.jpg", skills: ["TypeScript", "B2B SaaS", "Fintech"], body: { en: "Building practical software for Saudi SMEs and looking for a commercially strong partner.", ar: "يبني برمجيات عملية للمنشآت السعودية ويبحث عن شريك قوي تجاريًا." } },
-  { id: 2, name: "Maha A.", role: { en: "Growth & partnerships", ar: "نمو وشراكات" }, city: { en: "Khobar", ar: "الخبر" }, fit: "88%", image: "/profile-maha.jpg", skills: ["Growth", "Partnerships", "Marketplaces"], body: { en: "Experienced in launching regional products and building their first commercial partnerships.", ar: "خبرة في إطلاق منتجات إقليمية وبناء شراكاتها التجارية الأولى." } },
-  { id: 3, name: "Sara Alotaibi", role: { en: "Product lead", ar: "قائدة منتجات" }, city: { en: "Jeddah", ar: "جدة" }, fit: "84%", image: "/profile-sara.jpg", skills: ["Product", "Logistics", "Research"], body: { en: "Validating a simpler returns network for local commerce and seeking technical leadership.", ar: "تتحقق من شبكة أبسط لمرتجعات التجارة المحلية وتبحث عن قيادة تقنية." } },
-] as const;
 
 const nav = [
   ["Feed", "الخلاصة", "/dashboard", Compass],
@@ -54,39 +57,51 @@ const nav = [
 const pageCopy = {
   en: {
     discover: ["Discover", "Find people and ideas worth building with.", "Search by skills, sector, city, commitment, or startup stage."],
-    messages: ["Messages", "Move promising connections forward.", "Keep founder conversations focused, respectful, and easy to revisit."],
-    connections: ["Connections", "Your founder network, with context.", "Manage introductions, accepted connections, and people you want to follow up with."],
-    notifications: ["Notifications", "Only the updates that help you move.", "Matches, introductions, messages, and community activity—without noisy vanity alerts."],
-    settings: ["Settings", "Control your Kufuo experience.", "Manage matching preferences, privacy, notifications, language, and your connected account."],
+    messages: ["Messages", "Move promising connections forward.", "Private conversations become available after an introduction is accepted."],
+    connections: ["Connections", "Your founder network, with context.", "Manage incoming, outgoing, and accepted introduction requests."],
+    notifications: ["Notifications", "Only the updates that help you move.", "Introductions and messages—without noisy vanity alerts."],
+    settings: ["Settings", "Control your Kufuo experience.", "Manage matching, privacy, notifications, and your connected account."],
     search: "Search Kufuo",
     signOut: "Sign out",
   },
   ar: {
     discover: ["استكشف", "اعثر على أشخاص وأفكار تستحق أن تبني معها.", "ابحث حسب المهارات أو القطاع أو المدينة أو الالتزام أو مرحلة المشروع."],
-    messages: ["الرسائل", "حوّل العلاقات الواعدة إلى خطوات عملية.", "حافظ على محادثات المؤسسين مركزة ومحترمة وسهلة الرجوع."],
-    connections: ["العلاقات", "شبكة مؤسسين بسياق واضح.", "أدر التعارفات والعلاقات المقبولة والأشخاص الذين تريد متابعتهم."],
-    notifications: ["التنبيهات", "التحديثات التي تساعدك على التقدم فقط.", "توافقات وتعارفات ورسائل ونشاط مجتمعي دون تنبيهات سطحية مزعجة."],
-    settings: ["الإعدادات", "تحكم في تجربتك على كفو.", "أدر تفضيلات المطابقة والخصوصية والتنبيهات واللغة والحساب المتصل."],
+    messages: ["الرسائل", "حوّل العلاقات الواعدة إلى خطوات عملية.", "تتوفر المحادثة الخاصة بعد قبول طلب التعارف."],
+    connections: ["العلاقات", "شبكة مؤسسين بسياق واضح.", "أدر طلبات التعارف الواردة والصادرة والعلاقات المقبولة."],
+    notifications: ["التنبيهات", "التحديثات التي تساعدك على التقدم فقط.", "طلبات التعارف والرسائل دون تنبيهات مزعجة."],
+    settings: ["الإعدادات", "تحكم في تجربتك على كفو.", "أدر المطابقة والخصوصية والتنبيهات والحساب المتصل."],
     search: "ابحث في كفو",
     signOut: "تسجيل الخروج",
   },
 } as const;
 
 function Brand() {
-  return <a className="brand" href="/" aria-label="Kufuo home"><span className="brand-mark"><img src="/kufuo-logo.svg" alt="Kufuo" /></span></a>;
+  return <Link className="brand" href="/" aria-label="Kufuo home"><span className="brand-mark"><img src="/kufuo-logo.svg" alt="Kufuo" /></span></Link>;
 }
 
-export function MemberWorkspace({ mode, user, signOutHref }: { mode: Mode; user: { displayName: string; email: string }; signOutHref: string }) {
+function EmptyState({ title, body, href, action }: { title: string; body: string; href?: string; action?: string }) {
+  return <div className="workspace-empty"><span className="side-icon"><Sparkles size={21} /></span><h2>{title}</h2><p>{body}</p>{href && action && <a className="button button-small" href={href}>{action}<ChevronRight size={16} /></a>}</div>;
+}
+
+export function MemberWorkspace({ mode, userId, user, signOutHref }: { mode: Mode; userId: string; user: { displayName: string; email: string }; signOutHref: string }) {
   const [language, setLanguage] = useState<Language>("en");
   const [query, setQuery] = useState("");
-  const [saved, setSaved] = useState<number[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [profiles, setProfiles] = useState<FounderProfile[]>([]);
+  const [ideas, setIdeas] = useState<Idea[]>([]);
+  const [savedProfileIds, setSavedProfileIds] = useState<string[]>([]);
   const [discoverType, setDiscoverType] = useState<"people" | "ideas">("people");
+  const [requests, setRequests] = useState<ConnectionRequest[]>([]);
+  const [connectionProfiles, setConnectionProfiles] = useState<FounderProfile[]>([]);
+  const [connectionTab, setConnectionTab] = useState<"accepted" | "pending">("accepted");
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [conversationProfiles, setConversationProfiles] = useState<FounderProfile[]>([]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [activeConversation, setActiveConversation] = useState(0);
   const [draft, setDraft] = useState("");
-  const [sentMessages, setSentMessages] = useState<string[]>([]);
-  const [connectionTab, setConnectionTab] = useState<"accepted" | "pending">("accepted");
-  const [notificationsRead, setNotificationsRead] = useState(false);
-  const [settingsState, setSettingsState] = useState({ matching: true, introductions: true, community: false, profileVisible: true, cityVisible: true });
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [settingsState, setSettingsState] = useState<MemberSettings>({ user_id: userId, match_notifications: true, introduction_notifications: true, community_notifications: false, profile_visible: true, city_visible: true, preferred_language: "en" });
   const arabic = language === "ar";
   const t = pageCopy[language];
   const [label, title, body] = t[mode];
@@ -97,64 +112,122 @@ export function MemberWorkspace({ mode, user, signOutHref }: { mode: Mode; user:
     document.documentElement.dir = arabic ? "rtl" : "ltr";
   }, [language, arabic]);
 
-  const filteredFounders = useMemo(() => founders.filter((founder) => `${founder.name} ${founder.role[language]} ${founder.city[language]} ${founder.skills.join(" ")}`.toLowerCase().includes(query.toLowerCase())), [query, language]);
+  useEffect(() => {
+    let alive = true;
+    const run = async () => {
+      try {
+        if (mode === "discover") {
+          const data = await loadDiscovery(userId);
+          if (alive) { setProfiles(data.profiles); setIdeas(data.ideas); setSavedProfileIds(data.savedProfileIds); }
+        } else if (mode === "connections") {
+          const data = await loadConnections(userId);
+          if (alive) { setRequests(data.requests); setConnectionProfiles(data.profiles); }
+        } else if (mode === "messages") {
+          const data = await loadConversations(userId);
+          if (alive) { setConversations(data.conversations); setConversationProfiles(data.profiles); setMessages(data.messages); }
+        } else if (mode === "notifications") {
+          const data = await loadNotifications(userId);
+          if (alive) setNotifications(data);
+        } else if (mode === "settings") {
+          const data = await loadSettings(userId);
+          if (alive && data) { setSettingsState(data); setLanguage(data.preferred_language); }
+        }
+      } catch (cause) {
+        if (alive) setError(cause instanceof Error ? cause.message : "Could not load your Kufuo data.");
+      } finally {
+        if (alive) setLoading(false);
+      }
+    };
+    run();
+    return () => { alive = false; };
+  }, [mode, userId]);
 
-  function sendMessage() {
-    const value = draft.trim();
-    if (!value) return;
-    setSentMessages([...sentMessages, value]);
-    setDraft("");
+  const filteredProfiles = useMemo(() => profiles.filter((profile) => `${profile.full_name} ${profile.headline} ${profile.city} ${profile.skills.join(" ")} ${profile.industries.join(" ")}`.toLowerCase().includes(query.toLowerCase())), [profiles, query]);
+  const filteredIdeas = useMemo(() => ideas.filter((idea) => `${idea.title} ${idea.summary} ${idea.city} ${idea.skills_needed.join(" ")} ${idea.industries.join(" ")}`.toLowerCase().includes(query.toLowerCase())), [ideas, query]);
+  const unreadCount = notifications.filter((item) => !item.read_at).length;
+
+  async function toggleProfile(profileId: string) {
+    const shouldSave = !savedProfileIds.includes(profileId);
+    setSavedProfileIds((current) => shouldSave ? [...current, profileId] : current.filter((id) => id !== profileId));
+    try { await toggleSavedProfile(userId, profileId, shouldSave); }
+    catch (cause) { setSavedProfileIds((current) => shouldSave ? current.filter((id) => id !== profileId) : [...current, profileId]); setError(cause instanceof Error ? cause.message : "Could not save this profile."); }
   }
 
-  return (
-    <main className="workspace-app" dir={arabic ? "rtl" : "ltr"}>
-      <header className="workspace-topbar">
-        <Brand />
-        <label className="dash-search"><Search size={17} /><span className="sr-only">{t.search}</span><input type="search" placeholder={t.search} /></label>
-        <div><button className="language-button" type="button" onClick={() => setLanguage(arabic ? "en" : "ar")}><Languages size={18} /><span>{arabic ? "English" : "العربية"}</span></button><a className="dash-user-link" href="/account"><UserRound size={18} /><span>{firstName}</span></a></div>
-      </header>
+  async function respond(requestId: string, status: "accepted" | "declined" | "cancelled") {
+    try {
+      const updated = await respondToIntroduction(requestId, status);
+      setRequests((current) => current.map((item) => item.id === updated.id ? updated : item));
+    } catch (cause) { setError(cause instanceof Error ? cause.message : "Could not update the request."); }
+  }
 
-      <div className="workspace-grid">
-        <aside className="workspace-sidebar">
-          <nav className="dash-nav" aria-label="Member navigation">{nav.map(([en, ar, href, Icon]) => <a className={href === `/${mode}` ? "is-active" : ""} href={href} key={href}><Icon size={18} /><span>{arabic ? ar : en}</span>{href === "/notifications" && !notificationsRead && <b>2</b>}</a>)}</nav>
-          <div className="workspace-profile-note"><span className="dash-small-avatar"><UserRound size={18} /></span><div><strong>{user.displayName}</strong><span>{arabic ? "اكتمل ٦٠٪ من الملف" : "Profile 60% complete"}</span></div></div>
-          <a className="dash-signout" href={signOutHref}><LogOut size={17} />{t.signOut}</a>
-        </aside>
+  async function sendMessage() {
+    const conversation = conversations[activeConversation];
+    const value = draft.trim();
+    if (!conversation || !value) return;
+    try {
+      const message = await sendConversationMessage(userId, conversation.id, value);
+      setMessages((current) => [...current, message]);
+      setDraft("");
+    } catch (cause) { setError(cause instanceof Error ? cause.message : "Could not send the message."); }
+  }
 
-        <section className="workspace-main">
-          <header className="workspace-heading"><p className="kicker">{label}</p><h1>{title}</h1><p>{body}</p></header>
-          {mode === "discover" && <Discover language={language} query={query} setQuery={setQuery} type={discoverType} setType={setDiscoverType} founders={filteredFounders} saved={saved} setSaved={setSaved} />}
-          {mode === "messages" && <Messages language={language} active={activeConversation} setActive={setActiveConversation} draft={draft} setDraft={setDraft} sent={sentMessages} send={sendMessage} />}
-          {mode === "connections" && <Connections language={language} tab={connectionTab} setTab={setConnectionTab} />}
-          {mode === "notifications" && <Notifications language={language} read={notificationsRead} setRead={setNotificationsRead} />}
-          {mode === "settings" && <SettingsView language={language} state={settingsState} setState={setSettingsState} user={user} signOutHref={signOutHref} />}
-        </section>
-      </div>
-    </main>
-  );
+  async function readAllNotifications() {
+    try { await markNotificationsRead(userId); setNotifications((current) => current.map((item) => ({ ...item, read_at: item.read_at ?? new Date().toISOString() }))); }
+    catch (cause) { setError(cause instanceof Error ? cause.message : "Could not update notifications."); }
+  }
+
+  async function updateSettings(next: MemberSettings) {
+    setSettingsState(next);
+    setError("");
+    const { user_id: _userId, ...preferences } = next;
+    void _userId;
+    try { const saved = await saveSettings(userId, preferences); setSettingsState(saved); }
+    catch (cause) { setError(cause instanceof Error ? cause.message : "Could not save settings."); }
+  }
+
+  return <main className="workspace-app" dir={arabic ? "rtl" : "ltr"}>
+    <header className="workspace-topbar"><Brand /><label className="dash-search"><Search size={17} /><span className="sr-only">{t.search}</span><input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder={t.search} /></label><div><button className="language-button" type="button" onClick={() => setLanguage(arabic ? "en" : "ar")}><Languages size={18} /><span>{arabic ? "English" : "العربية"}</span></button><a className="dash-user-link" href="/account"><UserRound size={18} /><span>{firstName}</span></a></div></header>
+    <div className="workspace-grid"><aside className="workspace-sidebar"><nav className="dash-nav" aria-label="Member navigation">{nav.map(([en, ar, href, Icon]) => <a className={href === `/${mode}` ? "is-active" : ""} href={href} key={href}><Icon size={18} /><span>{arabic ? ar : en}</span>{href === "/notifications" && unreadCount > 0 && <b>{unreadCount}</b>}</a>)}</nav><div className="workspace-profile-note"><span className="dash-small-avatar"><UserRound size={18} /></span><div><strong>{user.displayName}</strong><span>{arabic ? "عضو كفو" : "Kufuo member"}</span></div></div><a className="dash-signout" href={signOutHref}><LogOut size={17} />{t.signOut}</a></aside>
+      <section className="workspace-main"><header className="workspace-heading"><p className="kicker">{label}</p><h1>{title}</h1><p>{body}</p></header>{error && <p className="workspace-error" role="alert">{error}</p>}{loading ? <div className="workspace-loading" role="status">{arabic ? "جارٍ تحميل بياناتك…" : "Loading your Kufuo workspace…"}</div> : <>{mode === "discover" && <Discover language={language} query={query} setQuery={setQuery} type={discoverType} setType={setDiscoverType} profiles={filteredProfiles} ideas={filteredIdeas} saved={savedProfileIds} onToggleSaved={toggleProfile} />}{mode === "connections" && <Connections language={language} userId={userId} tab={connectionTab} setTab={setConnectionTab} requests={requests} profiles={connectionProfiles} onRespond={respond} />}{mode === "messages" && <Messages language={language} userId={userId} conversations={conversations} profiles={conversationProfiles} messages={messages} active={activeConversation} setActive={setActiveConversation} draft={draft} setDraft={setDraft} send={sendMessage} />}{mode === "notifications" && <Notifications language={language} items={notifications} onReadAll={readAllNotifications} />}{mode === "settings" && <SettingsView language={language} state={settingsState} onChange={updateSettings} user={user} signOutHref={signOutHref} />}</>}</section>
+    </div>
+  </main>;
 }
 
-function Discover({ language, query, setQuery, type, setType, founders: results, saved, setSaved }: { language: Language; query: string; setQuery: (v: string) => void; type: "people" | "ideas"; setType: (v: "people" | "ideas") => void; founders: Array<(typeof founders)[number]>; saved: number[]; setSaved: (v: number[]) => void }) {
+function Discover({ language, query, setQuery, type, setType, profiles, ideas, saved, onToggleSaved }: { language: Language; query: string; setQuery: (value: string) => void; type: "people" | "ideas"; setType: (value: "people" | "ideas") => void; profiles: FounderProfile[]; ideas: Idea[]; saved: string[]; onToggleSaved: (id: string) => void }) {
   const ar = language === "ar";
-  return <div className="discover-view"><div className="workspace-toolbar"><div className="segmented"><button className={type === "people" ? "is-active" : ""} onClick={() => setType("people")} type="button"><UsersRound size={17} />{ar ? "مؤسسون" : "Founders"}</button><button className={type === "ideas" ? "is-active" : ""} onClick={() => setType("ideas")} type="button"><Lightbulb size={17} />{ar ? "أفكار" : "Ideas"}</button></div><button className="button button-secondary button-small" type="button"><Filter size={16} />{ar ? "تصفية" : "Filters"}</button></div><label className="workspace-search"><Search size={18} /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder={ar ? "ابحث بالمهارة أو المدينة أو القطاع" : "Search by skill, city, or sector"} /></label>{type === "people" ? <div className="discover-grid">{results.map((founder) => <article className="discover-card" key={founder.id}><div className="discover-card-top"><img src={founder.image} alt="" /><span className="status"><Sparkles size={14} />{founder.fit} {ar ? "توافق" : "fit"}</span></div><h2>{founder.name}</h2><p className="discover-role">{founder.role[language]} · {founder.city[language]}</p><p>{founder.body[language]}</p><div className="tag-row">{founder.skills.map((skill) => <span className="tag" key={skill}>{skill}</span>)}</div><footer><a className="button button-small" href="/profile">{ar ? "عرض الملف" : "View profile"}<ChevronRight size={16} /></a><button className={`icon-button ${saved.includes(founder.id) ? "is-saved" : ""}`} type="button" aria-label="Save" onClick={() => setSaved(saved.includes(founder.id) ? saved.filter((id) => id !== founder.id) : [...saved, founder.id])}><Bookmark size={18} fill={saved.includes(founder.id) ? "currentColor" : "none"} /></button></footer></article>)}</div> : <div className="idea-list"><article><span className="side-icon inverse"><BriefcaseBusiness size={20} /></span><div><small>{ar ? "مرحلة التحقق · الرياض" : "Validation · Riyadh"}</small><h2>{ar ? "ذكاء المخزون للمنشآت السعودية" : "Inventory intelligence for Saudi SMEs"}</h2><p>{ar ? "فريق تجاري يبحث عن شريك تقني لبناء نموذج أولي ثنائي اللغة." : "A commercial founding team seeking a technical partner for a bilingual MVP."}</p></div><a className="button button-small" href="/profile">{ar ? "استكشف" : "Explore"}<ChevronRight size={16} /></a></article><article><span className="side-icon"><Lightbulb size={20} /></span><div><small>{ar ? "اكتشاف المشكلة · جدة" : "Problem discovery · Jeddah"}</small><h2>{ar ? "مرتجعات أبسط للتجارة المحلية" : "Simpler returns for local commerce"}</h2><p>{ar ? "فكرة يتم اختبارها مع متاجر محلية وتبحث عن خبرة تشغيلية وتقنية." : "An idea being tested with local stores, seeking operational and technical depth."}</p></div><a className="button button-small button-secondary" href="/profile">{ar ? "استكشف" : "Explore"}<ChevronRight size={16} /></a></article></div>}</div>;
+  return <div className="discover-view"><div className="workspace-toolbar"><div className="segmented"><button className={type === "people" ? "is-active" : ""} onClick={() => setType("people")} type="button"><UsersRound size={17} />{ar ? "مؤسسون" : "Founders"}</button><button className={type === "ideas" ? "is-active" : ""} onClick={() => setType("ideas")} type="button"><Lightbulb size={17} />{ar ? "أفكار" : "Ideas"}</button></div><button className="button button-secondary button-small" type="button"><Filter size={16} />{ar ? "تصفية" : "Filters"}</button></div><label className="workspace-search"><Search size={18} /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder={ar ? "ابحث بالمهارة أو المدينة أو القطاع" : "Search by skill, city, or sector"} /></label>{type === "people" ? profiles.length ? <div className="discover-grid">{profiles.map((profile) => <article className="discover-card" key={profile.id}><div className="discover-card-top">{profile.avatar_url ? <img src={profile.avatar_url} alt={profile.full_name ?? "Founder"} /> : <span className="discover-avatar-fallback"><UserRound size={34} /></span>}<span className="status"><ShieldCheck size={14} />{profile.profile_strength}%</span></div><h2>{profile.full_name ?? (ar ? "عضو كفو" : "Kufuo member")}</h2><p className="discover-role">{profile.headline ?? profile.role} · {profile.city ?? (ar ? "السعودية" : "Saudi Arabia")}</p><p>{profile.bio}</p><div className="tag-row">{profile.skills.slice(0, 4).map((skill) => <span className="tag" key={skill}>{skill}</span>)}</div><footer><a className="button button-small" href={`/profile/${profile.id}`}>{ar ? "عرض الملف" : "View profile"}<ChevronRight size={16} /></a><button className={`icon-button ${saved.includes(profile.id) ? "is-saved" : ""}`} type="button" aria-label={ar ? "حفظ الملف" : "Save profile"} onClick={() => onToggleSaved(profile.id)}><Bookmark size={18} fill={saved.includes(profile.id) ? "currentColor" : "none"} /></button></footer></article>)}</div> : <EmptyState title={ar ? "لا توجد ملفات مكتملة بعد" : "No complete founder profiles yet"} body={ar ? "كن أول من يكمل ملفه، وستظهر الملفات المناسبة هنا عند انضمامها." : "Complete your own profile first. Compatible members will appear here as the community grows."} href="/account" action={ar ? "أكمل ملفك" : "Complete your profile"} /> : ideas.length ? <div className="idea-list">{ideas.map((idea) => <article key={idea.id}><span className="side-icon"><Lightbulb size={20} /></span><div><small>{idea.stage} · {idea.city ?? (ar ? "السعودية" : "Saudi Arabia")}</small><h2>{idea.title}</h2><p>{idea.summary}</p><div className="tag-row">{idea.skills_needed.map((skill) => <span className="tag" key={skill}>{skill}</span>)}</div></div><a className="button button-small button-secondary" href={`/profile/${idea.owner_id}`}>{ar ? "المؤسس" : "Founder"}<ChevronRight size={16} /></a></article>)}</div> : <EmptyState title={ar ? "لا توجد أفكار منشورة" : "No open ideas yet"} body={ar ? "ستظهر هنا الأفكار التي ينشرها أعضاؤها للعثور على شريك." : "Ideas seeking a cofounder will appear here once members publish them."} href="/dashboard" action={ar ? "انشر تحديثًا" : "Share an update"} />}</div>;
 }
 
-function Messages({ language, active, setActive, draft, setDraft, sent, send }: { language: Language; active: number; setActive: (v: number) => void; draft: string; setDraft: (v: string) => void; sent: string[]; send: () => void }) {
-  const ar = language === "ar"; const conversations = [{ name: "Amir N.", image: "/profile-amir.jpg", preview: ar ? "دعنا نحدد تجربة العمل…" : "Let’s define the trial sprint…" }, { name: "Maha A.", image: "/profile-maha.jpg", preview: ar ? "أرسلت لك تفاصيل الفعالية" : "I sent the event details" }, { name: "Sara Alotaibi", image: "/profile-sara.jpg", preview: ar ? "الفكرة ما زالت في مرحلة…" : "The idea is still at the…" }];
-  return <div className="messages-shell"><aside className="conversation-list"><label><Search size={17} /><input placeholder={ar ? "ابحث في الرسائل" : "Search messages"} /></label>{conversations.map((item, index) => <button className={active === index ? "is-active" : ""} type="button" onClick={() => setActive(index)} key={item.name}><img src={item.image} alt="" /><span><strong>{item.name}</strong><small>{item.preview}</small></span>{index === 0 && <b />}</button>)}</aside><section className="conversation"><header><img src={conversations[active].image} alt="" /><div><strong>{conversations[active].name}</strong><span>{ar ? "متصل عبر تعارف متبادل" : "Connected through a mutual introduction"}</span></div><a className="button button-small button-secondary" href="/profile">{ar ? "الملف" : "Profile"}</a></header><div className="message-thread"><div className="message-date">{ar ? "اليوم" : "Today"}</div><p className="message-bubble received">{ar ? "شكرًا لقبول التعارف. أعتقد أن خبراتنا متكاملة." : "Thanks for accepting the introduction. I think our experience is complementary."}</p><p className="message-bubble sent">{ar ? "أتفق. لنبدأ بمكالمة قصيرة ثم نحدد تجربة عمل صغيرة." : "Agreed. Let’s start with a short call, then define one small trial sprint."}</p>{sent.map((message, index) => <p className="message-bubble sent" key={`${message}-${index}`}>{message}</p>)}</div><div className="message-compose"><textarea value={draft} onChange={(event) => setDraft(event.target.value)} placeholder={ar ? "اكتب رسالة…" : "Write a message…"} rows={2} /><button className="button" type="button" onClick={send} aria-label={ar ? "إرسال" : "Send"}><Send size={18} /></button></div></section></div>;
+function Connections({ language, userId, tab, setTab, requests, profiles, onRespond }: { language: Language; userId: string; tab: "accepted" | "pending"; setTab: (value: "accepted" | "pending") => void; requests: ConnectionRequest[]; profiles: FounderProfile[]; onRespond: (id: string, status: "accepted" | "declined" | "cancelled") => void }) {
+  const ar = language === "ar";
+  const data = requests.filter((request) => tab === "accepted" ? request.status === "accepted" : request.status === "pending");
+  const profileMap = new Map(profiles.map((profile) => [profile.id, profile]));
+  return <div><div className="workspace-toolbar"><div className="segmented"><button className={tab === "accepted" ? "is-active" : ""} type="button" onClick={() => setTab("accepted")}><UserCheck size={17} />{ar ? "العلاقات" : "Connected"}</button><button className={tab === "pending" ? "is-active" : ""} type="button" onClick={() => setTab("pending")}><Clock3 size={17} />{ar ? "قيد الانتظار" : "Pending"}</button></div></div>{data.length ? <div className="connection-list">{data.map((request) => { const incoming = request.recipient_id === userId; const person = profileMap.get(incoming ? request.requester_id : request.recipient_id); return <article key={request.id}>{person?.avatar_url ? <img src={person.avatar_url} alt={person.full_name ?? "Founder"} /> : <span className="dash-small-avatar"><UserRound size={20} /></span>}<div><h2>{person?.full_name ?? (ar ? "عضو كفو" : "Kufuo member")}</h2><p>{person?.headline ?? person?.role} · {person?.city ?? (ar ? "السعودية" : "Saudi Arabia")}</p><span>{tab === "accepted" ? (ar ? "تم قبول التعارف" : "Introduction accepted") : incoming ? (ar ? "طلب وارد" : "Incoming request") : (ar ? "بانتظار الرد" : "Waiting for response")}</span>{request.message && <p className="connection-message">{request.message}</p>}</div><div>{tab === "accepted" ? <><a className="button button-small" href="/messages"><MessageCircle size={16} />{ar ? "رسالة" : "Message"}</a><a className="icon-button" href={`/profile/${person?.id}`} aria-label="View profile"><ChevronRight size={17} /></a></> : incoming ? <><button className="button button-small" type="button" onClick={() => onRespond(request.id, "accepted")}><Check size={16} />{ar ? "قبول" : "Accept"}</button><button className="button button-small button-secondary" type="button" onClick={() => onRespond(request.id, "declined")}><X size={16} />{ar ? "رفض" : "Decline"}</button></> : <button className="button button-small button-secondary" type="button" onClick={() => onRespond(request.id, "cancelled")}><X size={16} />{ar ? "إلغاء" : "Cancel"}</button>}</div></article>; })}</div> : <EmptyState title={tab === "accepted" ? (ar ? "لا توجد علاقات بعد" : "No connections yet") : (ar ? "لا توجد طلبات معلقة" : "No pending requests")} body={ar ? "استكشف أعضاء المجتمع وأرسل طلب تعارف واضح ومحترم." : "Discover community members and send a thoughtful introduction request."} href="/discover" action={ar ? "استكشف المؤسسين" : "Discover founders"} />}</div>;
 }
 
-function Connections({ language, tab, setTab }: { language: Language; tab: "accepted" | "pending"; setTab: (v: "accepted" | "pending") => void }) {
-  const ar = language === "ar"; const data = tab === "accepted" ? founders.slice(0, 2) : founders.slice(2);
-  return <div><div className="workspace-toolbar"><div className="segmented"><button className={tab === "accepted" ? "is-active" : ""} type="button" onClick={() => setTab("accepted")}><UserCheck size={17} />{ar ? "العلاقات" : "Connected"}</button><button className={tab === "pending" ? "is-active" : ""} type="button" onClick={() => setTab("pending")}><Clock3 size={17} />{ar ? "قيد الانتظار" : "Pending"}</button></div></div><div className="connection-list">{data.map((person) => <article key={person.id}><img src={person.image} alt="" /><div><h2>{person.name}</h2><p>{person.role[language]} · {person.city[language]}</p><span>{tab === "accepted" ? (ar ? "تم التعارف بنجاح" : "Introduction accepted") : (ar ? "بانتظار الرد" : "Waiting for response")}</span></div><div><a className="button button-small" href="/messages"><MessageCircle size={16} />{ar ? "رسالة" : "Message"}</a><button className="icon-button" type="button" aria-label="Remove"><X size={17} /></button></div></article>)}</div></div>;
+function Messages({ language, userId, conversations, profiles, messages, active, setActive, draft, setDraft, send }: { language: Language; userId: string; conversations: Conversation[]; profiles: FounderProfile[]; messages: Message[]; active: number; setActive: (value: number) => void; draft: string; setDraft: (value: string) => void; send: () => void }) {
+  const ar = language === "ar";
+  const profileMap = new Map(profiles.map((profile) => [profile.id, profile]));
+  const activeConversation = conversations[active];
+  if (!conversations.length) return <EmptyState title={ar ? "لا توجد محادثات بعد" : "No conversations yet"} body={ar ? "تبدأ المحادثة بعد قبول أحد طلبات التعارف." : "A private conversation opens after an introduction request is accepted."} href="/discover" action={ar ? "اكتشف المؤسسين" : "Discover founders"} />;
+  const activeProfile = profileMap.get(activeConversation.participant_a === userId ? activeConversation.participant_b : activeConversation.participant_a);
+  return <div className="messages-shell"><aside className="conversation-list"><label><Search size={17} /><input placeholder={ar ? "ابحث في الرسائل" : "Search messages"} /></label>{conversations.map((conversation, index) => { const person = profileMap.get(conversation.participant_a === userId ? conversation.participant_b : conversation.participant_a); const last = messages.filter((message) => message.conversation_id === conversation.id).at(-1); return <button className={active === index ? "is-active" : ""} type="button" onClick={() => setActive(index)} key={conversation.id}>{person?.avatar_url ? <img src={person.avatar_url} alt="" /> : <span className="dash-small-avatar"><UserRound size={18} /></span>}<span><strong>{person?.full_name ?? (ar ? "عضو كفو" : "Kufuo member")}</strong><small>{last?.body ?? (ar ? "ابدأ المحادثة" : "Start the conversation")}</small></span></button>; })}</aside><section className="conversation"><header>{activeProfile?.avatar_url ? <img src={activeProfile.avatar_url} alt="" /> : <span className="dash-small-avatar"><UserRound size={20} /></span>}<div><strong>{activeProfile?.full_name ?? (ar ? "عضو كفو" : "Kufuo member")}</strong><span>{ar ? "تم التعارف عبر كفو" : "Connected through Kufuo"}</span></div><a className="button button-small button-secondary" href={`/profile/${activeProfile?.id}`}>{ar ? "الملف" : "Profile"}</a></header><div className="message-thread"><div className="message-date">{ar ? "المحادثة" : "Conversation"}</div>{messages.filter((message) => message.conversation_id === activeConversation.id).map((message) => <p className={`message-bubble ${message.author_id === userId ? "sent" : "received"}`} key={message.id}>{message.body}</p>)}</div><div className="message-compose"><textarea value={draft} onChange={(event) => setDraft(event.target.value)} placeholder={ar ? "اكتب رسالة…" : "Write a message…"} rows={2} /><button className="button" type="button" onClick={send} aria-label={ar ? "إرسال" : "Send"}><Send size={18} /></button></div></section></div>;
 }
 
-function Notifications({ language, read, setRead }: { language: Language; read: boolean; setRead: (v: boolean) => void }) {
-  const ar = language === "ar"; const items = [{ icon: Sparkles, title: ar ? "لديك توافق جديد بنسبة ٩٢٪" : "You have a new 92% founder match", body: ar ? "أمير مؤسس تقني في الرياض ومتوافق مع تفضيلاتك." : "Amir is a technical founder in Riyadh aligned with your preferences.", time: ar ? "قبل ١٨ دقيقة" : "18 min ago", href: "/profile" }, { icon: UserRoundPlus, title: ar ? "قبلت مها طلب التعارف" : "Maha accepted your introduction", body: ar ? "يمكنكما الآن بدء محادثة خاصة." : "You can now start a private conversation.", time: ar ? "قبل ساعتين" : "2 hrs ago", href: "/messages" }, { icon: Lightbulb, title: ar ? "فكرة جديدة في الخدمات اللوجستية" : "New idea in logistics", body: ar ? "فرصة في جدة تناسب اهتماماتك وخبرتك." : "A Jeddah opportunity matches your interests and experience.", time: ar ? "أمس" : "Yesterday", href: "/discover" }];
-  return <div className="notifications-view"><div className="workspace-toolbar"><span>{read ? (ar ? "لا توجد تنبيهات غير مقروءة" : "No unread notifications") : (ar ? "تنبيهان جديدان" : "2 new notifications")}</span><button className="button button-small button-secondary" type="button" onClick={() => setRead(true)}><Check size={16} />{ar ? "تحديد الكل كمقروء" : "Mark all read"}</button></div><div className="notification-list">{items.map((item, index) => { const Icon = item.icon; return <a className={!read && index < 2 ? "is-unread" : ""} href={item.href} key={item.title}><span className="side-icon"><Icon size={20} /></span><div><h2>{item.title}</h2><p>{item.body}</p><small>{item.time}</small></div><ChevronRight size={18} /></a>; })}</div></div>;
+function Notifications({ language, items, onReadAll }: { language: Language; items: Notification[]; onReadAll: () => void }) {
+  const ar = language === "ar";
+  const unread = items.filter((item) => !item.read_at).length;
+  return <div className="notifications-view"><div className="workspace-toolbar"><span>{unread ? (ar ? `${unread} تنبيهات جديدة` : `${unread} new notifications`) : (ar ? "لا توجد تنبيهات غير مقروءة" : "No unread notifications")}</span><button className="button button-small button-secondary" type="button" onClick={onReadAll} disabled={!unread}><Check size={16} />{ar ? "تحديد الكل كمقروء" : "Mark all read"}</button></div>{items.length ? <div className="notification-list">{items.map((item) => <a className={!item.read_at ? "is-unread" : ""} href={item.href ?? "/dashboard"} key={item.id}><span className="side-icon"><Bell size={20} /></span><div><h2>{item.title}</h2>{item.body && <p>{item.body}</p>}<small>{new Date(item.created_at).toLocaleString(ar ? "ar-SA" : "en-SA")}</small></div><ChevronRight size={18} /></a>)}</div> : <EmptyState title={ar ? "كل شيء هادئ" : "You are all caught up"} body={ar ? "ستظهر هنا طلبات التعارف والرسائل المهمة." : "Introduction requests and important messages will appear here."} />}</div>;
 }
 
-function SettingsView({ language, state, setState, user, signOutHref }: { language: Language; state: SettingsState; setState: (v: SettingsState) => void; user: { displayName: string; email: string }; signOutHref: string }) {
-  const ar = language === "ar"; const rows = [{ key: "matching", icon: Sparkles, title: ar ? "تنبيهات التوافق" : "Match recommendations", body: ar ? "أرسل لي التوافقات الجديدة ذات الجودة العالية." : "Notify me about strong new matches." }, { key: "introductions", icon: UserRoundPlus, title: ar ? "طلبات التعارف" : "Introduction updates", body: ar ? "أرسل لي تحديثات القبول والرفض." : "Notify me when introduction requests change." }, { key: "community", icon: Bell, title: ar ? "ملخص المجتمع" : "Community digest", body: ar ? "ملخص أسبوعي للفعاليات والنقاشات." : "A weekly summary of events and discussions." }, { key: "profileVisible", icon: CircleUserRound, title: ar ? "ظهور الملف للأعضاء" : "Member profile visibility", body: ar ? "اسمح للأعضاء الموثقين باكتشاف ملفك." : "Let verified members discover your profile." }, { key: "cityVisible", icon: MapPin, title: ar ? "إظهار المدينة" : "Show my city", body: ar ? "اعرض مدينتك دون مشاركة موقع دقيق." : "Display your city without sharing a precise location." }];
-  return <div className="settings-layout"><section className="settings-panel"><div className="settings-section-title"><SlidersHorizontal size={20} /><div><h2>{ar ? "التفضيلات والخصوصية" : "Preferences & privacy"}</h2><p>{ar ? "يمكنك تغيير هذه الإعدادات في أي وقت." : "You can change these settings at any time."}</p></div></div>{rows.map((row) => { const Icon = row.icon; return <div className="settings-row" key={row.key}><span className="side-icon"><Icon size={19} /></span><div><strong>{row.title}</strong><p>{row.body}</p></div><button className={`switch ${state[row.key] ? "is-on" : ""}`} type="button" role="switch" aria-checked={state[row.key]} onClick={() => setState({ ...state, [row.key]: !state[row.key] })}><span /></button></div>; })}</section><aside className="settings-account"><div className="member-side-heading"><LockKeyhole size={20} /><span>{ar ? "الحساب المتصل" : "Connected account"}</span></div><div className="settings-user"><span className="dash-small-avatar"><UserRound size={20} /></span><div><strong>{user.displayName}</strong><span>{user.email}</span></div></div><p><ShieldCheck size={16} />{ar ? "جلسة كفو آمنة وموثقة" : "Secure, verified Kufuo session"}</p><a className="button button-secondary" href={signOutHref}><LogOut size={17} />{ar ? "تسجيل الخروج" : "Sign out"}</a></aside></div>;
+function SettingsView({ language, state, onChange, user, signOutHref }: { language: Language; state: MemberSettings; onChange: (state: MemberSettings) => void; user: { displayName: string; email: string }; signOutHref: string }) {
+  const ar = language === "ar";
+  const rows: Array<{ key: keyof MemberSettings; icon: typeof Sparkles; title: string; body: string }> = [
+    { key: "match_notifications", icon: Sparkles, title: ar ? "تنبيهات التوافق" : "Match recommendations", body: ar ? "أرسل لي التوافقات الجديدة عالية الجودة." : "Notify me about strong new matches." },
+    { key: "introduction_notifications", icon: UserCheck, title: ar ? "طلبات التعارف" : "Introduction requests", body: ar ? "نبهني عند وصول أو قبول طلب تعارف." : "Notify me when an introduction arrives or is accepted." },
+    { key: "community_notifications", icon: UsersRound, title: ar ? "نشاط المجتمع" : "Community activity", body: ar ? "أرسل لي أهم تحديثات المجتمع فقط." : "Send only meaningful community updates." },
+    { key: "profile_visible", icon: ShieldCheck, title: ar ? "ظهور الملف" : "Profile visibility", body: ar ? "اسمح للأعضاء المكتملين باكتشاف ملفي." : "Allow complete members to discover my profile." },
+    { key: "city_visible", icon: MapPin, title: ar ? "إظهار المدينة" : "Show my city", body: ar ? "أظهر مدينتي داخل الملف العام." : "Show my city on my public member profile." },
+  ];
+  return <div className="settings-layout"><section className="settings-list">{rows.map((row) => { const Icon = row.icon; const checked = Boolean(state[row.key]); return <div className="settings-row" key={row.key}><span className="side-icon"><Icon size={20} /></span><div><h2>{row.title}</h2><p>{row.body}</p></div><button className={`toggle ${checked ? "is-on" : ""}`} type="button" role="switch" aria-checked={checked} onClick={() => onChange({ ...state, [row.key]: !checked })}><span /></button></div>; })}</section><aside className="settings-account"><div className="member-side-heading"><LockKeyhole size={20} /><span>{ar ? "الحساب المتصل" : "Connected account"}</span></div><div className="settings-user"><span className="dash-small-avatar"><UserRound size={20} /></span><div><strong>{user.displayName}</strong><span>{user.email}</span></div></div><p><ShieldCheck size={16} />{ar ? "جلسة كفو آمنة وموثقة" : "Secure, verified Kufuo session"}</p><a className="button button-secondary" href={signOutHref}><LogOut size={17} />{ar ? "تسجيل الخروج" : "Sign out"}</a></aside></div>;
 }

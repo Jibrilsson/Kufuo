@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import {
   BriefcaseBusiness,
   Check,
@@ -19,8 +20,9 @@ import {
   ShieldCheck,
   Target,
   UserRound,
-  UsersRound,
 } from "lucide-react";
+import { saveOwnProfile } from "../lib/kufuo/client";
+import { emptyProfile, type FounderProfile } from "../lib/kufuo/types";
 
 type Language = "en" | "ar";
 
@@ -125,13 +127,57 @@ const copy = {
   },
 } as const;
 
-export function AccountView({ user, signOutHref }: { user: { displayName: string; email: string }; signOutHref: string }) {
+type ProfileForm = {
+  fullName: string;
+  headline: string;
+  city: string;
+  availability: string;
+  bio: string;
+  skills: string;
+  industries: string;
+  languages: string;
+  profileType: "idea" | "skill" | "both";
+  lookingFor: string;
+  startupStage: string;
+  commitment: string;
+  workingStyle: string;
+  decisionStyle: string;
+  equityApproach: string;
+};
+
+function profileToForm(profile: FounderProfile): ProfileForm {
+  return {
+    fullName: profile.full_name ?? "",
+    headline: profile.headline ?? "",
+    city: profile.city ?? "",
+    availability: profile.availability ?? "",
+    bio: profile.bio ?? "",
+    skills: profile.skills.join(", "),
+    industries: profile.industries.join(", "),
+    languages: profile.languages.join(", "),
+    profileType: profile.profile_type,
+    lookingFor: profile.looking_for ?? "",
+    startupStage: profile.startup_stage ?? "",
+    commitment: profile.commitment ?? "",
+    workingStyle: profile.working_style ?? "",
+    decisionStyle: profile.decision_style ?? "",
+    equityApproach: profile.equity_approach ?? "",
+  };
+}
+
+const splitList = (value: string) => value.split(",").map((item) => item.trim()).filter(Boolean);
+
+export function AccountView({ userId, user, initialProfile, signOutHref }: { userId: string; user: { displayName: string; email: string }; initialProfile: FounderProfile | null; signOutHref: string }) {
+  const startingProfile = initialProfile ?? emptyProfile(userId, user.displayName);
   const [language, setLanguage] = useState<Language>("en");
-  const [editing, setEditing] = useState(false);
+  const [editing, setEditing] = useState(!startingProfile.onboarding_complete);
   const [savedNotice, setSavedNotice] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const [profile, setProfile] = useState(startingProfile);
   const arabic = language === "ar";
   const t = copy[language];
-  const [details, setDetails] = useState({ role: copy.en.role, location: copy.en.location, availability: copy.en.availability, intro: copy.en.intro, about: copy.en.aboutBody });
+  const [details, setDetails] = useState<ProfileForm>(() => profileToForm(startingProfile));
 
   useEffect(() => {
     document.documentElement.lang = language;
@@ -140,46 +186,87 @@ export function AccountView({ user, signOutHref }: { user: { displayName: string
 
   function switchLanguage() {
     const nextLanguage: Language = arabic ? "en" : "ar";
-    const next = copy[nextLanguage];
     setLanguage(nextLanguage);
-    setDetails({ role: next.role, location: next.location, availability: next.availability, intro: next.intro, about: next.aboutBody });
-    setEditing(false);
   }
 
   function cancelEdit() {
-    setDetails({ role: t.role, location: t.location, availability: t.availability, intro: t.intro, about: t.aboutBody });
+    setDetails(profileToForm(profile));
     setEditing(false);
+    setError("");
   }
 
-  function saveProfile() {
-    setEditing(false);
-    setSavedNotice(true);
-    window.setTimeout(() => setSavedNotice(false), 3000);
+  async function saveProfile() {
+    setError("");
+    const required = [details.fullName, details.headline, details.city, details.bio, details.skills, details.lookingFor, details.commitment];
+    if (required.some((value) => !value.trim())) {
+      setError(arabic ? "أكمل الحقول الأساسية قبل حفظ الملف." : "Complete the required founder fields before saving.");
+      return;
+    }
+    setSaving(true);
+    try {
+      const strength = Math.min(100, 40 + [details.industries, details.languages, details.startupStage, details.workingStyle, details.decisionStyle, details.equityApproach].filter((value) => value.trim()).length * 10);
+      const saved = await saveOwnProfile(userId, {
+        full_name: details.fullName.trim(),
+        headline: details.headline.trim(),
+        role: details.headline.trim(),
+        city: details.city.trim(),
+        availability: details.availability.trim() || null,
+        bio: details.bio.trim(),
+        skills: splitList(details.skills),
+        industries: splitList(details.industries),
+        languages: splitList(details.languages),
+        profile_type: details.profileType,
+        looking_for: details.lookingFor.trim(),
+        startup_stage: details.startupStage.trim() || null,
+        commitment: details.commitment.trim(),
+        working_style: details.workingStyle.trim() || null,
+        decision_style: details.decisionStyle.trim() || null,
+        equity_approach: details.equityApproach.trim() || null,
+        onboarding_complete: true,
+        profile_strength: strength,
+        is_visible: true,
+      });
+      setProfile(saved);
+      setEditing(false);
+      setSavedNotice(true);
+      window.setTimeout(() => setSavedNotice(false), 3000);
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Could not save the profile.");
+    } finally {
+      setSaving(false);
+    }
   }
+
+  const input = (key: keyof ProfileForm, label: string, required = false) => (
+    <label className="member-field"><span>{label}{required ? " *" : ""}</span><input value={details[key]} onChange={(event) => setDetails({ ...details, [key]: event.target.value })} /></label>
+  );
+
+  const skills = splitList(details.skills);
+  const industries = splitList(details.industries);
+  const completion = profile.onboarding_complete ? profile.profile_strength : 20;
 
   return (
     <main className="member-profile-page" dir={arabic ? "rtl" : "ltr"}>
       <header className="member-topbar">
-        <a className="brand" href="/" aria-label="Kufuo home"><span className="brand-mark"><img src="/kufuo-logo.svg" alt="Kufuo" /></span></a>
+        <Link className="brand" href="/" aria-label="Kufuo home"><span className="brand-mark"><img src="/kufuo-logo.svg" alt="Kufuo" /></span></Link>
         <nav><a href="/dashboard"><Compass size={17} />{t.dashboard}</a><a className="is-active" href="/account"><CircleUserRound size={17} />{t.profile}</a></nav>
         <div><button className="language-button" type="button" onClick={switchLanguage}><Languages size={18} /><span>{arabic ? "English" : "العربية"}</span></button><a className="account-signout" href={signOutHref}><LogOut size={17} />{t.signOut}</a></div>
       </header>
 
       <section className="member-hero section-frame">
         <div className="member-avatar"><UserRound size={54} /></div>
-        <div className="member-identity"><p className="kicker">{t.kicker}</p><span className="account-verified"><ShieldCheck size={16} />{t.verified}</span><h1>{user.displayName}</h1>{editing ? <input aria-label={t.fields.role} value={details.role} onChange={(event) => setDetails({ ...details, role: event.target.value })} /> : <h2>{details.role}</h2>}<div className="member-meta"><span><MapPin size={16} />{details.location}</span><span><Clock3 size={16} />{details.availability}</span><span><Languages size={16} />{t.language}</span></div>{editing ? <textarea aria-label={t.fields.intro} value={details.intro} onChange={(event) => setDetails({ ...details, intro: event.target.value })} rows={4} /> : <p className="member-intro">{details.intro}</p>}<div className="member-actions">{editing ? <><button className="button" type="button" onClick={saveProfile}><Save size={17} />{t.save}</button><button className="button button-secondary" type="button" onClick={cancelEdit}>{t.cancel}</button></> : <button className="button" type="button" onClick={() => setEditing(true)}><Pencil size={17} />{t.edit}</button>}<a className="button button-secondary" href="/profile">{t.preview}<ChevronRight size={17} /></a></div>{savedNotice && <p className="member-save-notice" role="status"><Check size={16} />{t.saved}</p>}</div>
+        <div className="member-identity"><p className="kicker">{profile.onboarding_complete ? t.kicker : (arabic ? "ابدأ ملفك" : "Build your founder profile")}</p><span className="account-verified"><ShieldCheck size={16} />{t.verified}</span>{editing ? <div className="member-edit-grid">{input("fullName", arabic ? "الاسم" : "Full name", true)}{input("headline", t.fields.role, true)}</div> : <><h1>{details.fullName || user.displayName}</h1><h2>{details.headline || (arabic ? "أضف عنوانك المهني" : "Add your professional headline")}</h2></>}<div className="member-meta"><span><MapPin size={16} />{details.city || t.location}</span><span><Clock3 size={16} />{details.availability || t.availability}</span><span><Languages size={16} />{details.languages || t.language}</span></div>{editing ? <div className="member-edit-grid">{input("city", t.fields.location, true)}{input("availability", t.fields.availability)}<label className="member-field"><span>{arabic ? "ما الذي تقدمه؟" : "What do you bring?"} *</span><select value={details.profileType} onChange={(event) => setDetails({ ...details, profileType: event.target.value as ProfileForm["profileType"] })}><option value="idea">{arabic ? "لدي فكرة" : "I bring an idea"}</option><option value="skill">{arabic ? "لدي مهارة" : "I bring a skill"}</option><option value="both">{arabic ? "الاثنان" : "Both"}</option></select></label></div> : <p className="member-intro">{details.bio}</p>}<div className="member-actions">{editing ? <><button className="button" type="button" onClick={saveProfile} disabled={saving}><Save size={17} />{saving ? (arabic ? "جارٍ الحفظ…" : "Saving…") : t.save}</button>{profile.onboarding_complete && <button className="button button-secondary" type="button" onClick={cancelEdit}>{t.cancel}</button>}</> : <button className="button" type="button" onClick={() => setEditing(true)}><Pencil size={17} />{t.edit}</button>}<a className="button button-secondary" href={`/profile/${userId}`}>{t.preview}<ChevronRight size={17} /></a></div>{error && <p className="member-save-error" role="alert">{error}</p>}{savedNotice && <p className="member-save-notice" role="status"><Check size={16} />{t.saved}</p>}</div>
       </section>
 
       <div className="member-content section-frame">
         <div className="member-main">
-          <section className="member-section"><div className="member-section-title"><span className="side-icon"><UserRound size={20} /></span><h2>{t.about}</h2></div>{editing ? <textarea aria-label={t.fields.about} value={details.about} onChange={(event) => setDetails({ ...details, about: event.target.value })} rows={6} /> : <p>{details.about}</p>}</section>
-          <section className="member-two-column"><article><div className="member-section-title"><span className="side-icon"><Target size={20} /></span><h2>{t.skills}</h2></div><div className="member-tag-list">{t.skillsList.map((item) => <span key={item}>{item}</span>)}</div></article><article><div className="member-section-title"><span className="side-icon"><Lightbulb size={20} /></span><h2>{t.interests}</h2></div><div className="member-tag-list">{t.interestsList.map((item) => <span key={item}>{item}</span>)}</div></article></section>
-          <section className="member-section"><div className="member-section-title"><span className="side-icon inverse"><BriefcaseBusiness size={20} /></span><h2>{t.preferences}</h2></div><dl className="member-preferences">{t.preferenceRows.map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl></section>
-          <section className="member-section"><div className="member-section-title"><span className="side-icon"><Compass size={20} /></span><h2>{t.experience}</h2></div><div className="member-experience">{t.experienceRows.map(([title, body], index) => <article key={title}><span>0{index + 1}</span><div><h3>{title}</h3><p>{body}</p></div></article>)}</div></section>
+          <section className="member-section"><div className="member-section-title"><span className="side-icon"><UserRound size={20} /></span><h2>{t.about}</h2></div>{editing ? <textarea aria-label={t.fields.about} value={details.bio} onChange={(event) => setDetails({ ...details, bio: event.target.value })} rows={6} placeholder={arabic ? "عرّف عن خبرتك وما الذي تريد بناءه…" : "Describe your experience and what you want to build…"} /> : <p>{details.bio}</p>}</section>
+          <section className="member-two-column"><article><div className="member-section-title"><span className="side-icon"><Target size={20} /></span><h2>{t.skills}</h2></div>{editing ? input("skills", arabic ? "المهارات، افصل بينها بفاصلة" : "Skills, separated by commas", true) : <div className="member-tag-list">{skills.map((item) => <span key={item}>{item}</span>)}</div>}</article><article><div className="member-section-title"><span className="side-icon"><Lightbulb size={20} /></span><h2>{t.interests}</h2></div>{editing ? input("industries", arabic ? "القطاعات، افصل بينها بفاصلة" : "Sectors, separated by commas") : <div className="member-tag-list">{industries.map((item) => <span key={item}>{item}</span>)}</div>}</article></section>
+          <section className="member-section"><div className="member-section-title"><span className="side-icon inverse"><BriefcaseBusiness size={20} /></span><h2>{t.preferences}</h2></div>{editing ? <div className="member-edit-grid">{input("lookingFor", arabic ? "أبحث عن" : "Looking for", true)}{input("startupStage", arabic ? "مرحلة المشروع" : "Startup stage")}{input("commitment", arabic ? "نوع الالتزام" : "Commitment", true)}{input("workingStyle", arabic ? "أسلوب العمل" : "Working style")}{input("decisionStyle", arabic ? "أسلوب اتخاذ القرار" : "Decision style")}{input("equityApproach", arabic ? "نهج الحصص" : "Equity approach")}{input("languages", arabic ? "اللغات" : "Languages")}</div> : <dl className="member-preferences">{[[arabic ? "أبحث عن" : "Looking for", details.lookingFor], [arabic ? "المرحلة" : "Stage", details.startupStage], [arabic ? "الالتزام" : "Commitment", details.commitment], [arabic ? "أسلوب العمل" : "Working style", details.workingStyle], [arabic ? "أسلوب القرار" : "Decision style", details.decisionStyle], [arabic ? "نهج الحصص" : "Equity approach", details.equityApproach]].map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value || "—"}</dd></div>)}</dl>}</section>
         </div>
 
         <aside className="member-sidebar">
-          <section className="member-side-card"><div className="member-side-heading"><Target size={21} /><span>{t.strength}</span></div><strong>60%</strong><div className="member-progress"><span /></div><p>{t.strengthBody}</p><small>{t.complete}</small><button className="button button-small" type="button" onClick={() => setEditing(true)}>{t.edit}<Pencil size={15} /></button></section>
+          <section className="member-side-card"><div className="member-side-heading"><Target size={21} /><span>{t.strength}</span></div><strong>{completion}%</strong><div className="member-progress"><span style={{ width: `${completion}%` }} /></div><p>{t.strengthBody}</p><small>{profile.onboarding_complete ? (arabic ? "ملفك ظاهر للمجتمع" : "Your profile is discoverable") : (arabic ? "أكمل الحقول الأساسية للظهور" : "Complete the required fields to be discovered")}</small><button className="button button-small" type="button" onClick={() => setEditing(true)}>{t.edit}<Pencil size={15} /></button></section>
           <section className="member-side-card"><div className="member-side-heading"><LockKeyhole size={21} /><span>{t.account}</span></div><dl><div><dt><Mail size={16} />{t.email}</dt><dd>{user.email}</dd></div><div><dt><ShieldCheck size={16} />{t.authentication}</dt><dd>{t.authValue}</dd></div><div><dt><LockKeyhole size={16} />{t.privacy}</dt><dd>{t.privacyValue}</dd></div></dl><p className="member-secure-note">{t.secure}</p></section>
         </aside>
       </div>
