@@ -267,7 +267,7 @@ export function AccountView({ userId, user, initialProfile, signOutHref }: { use
 
   return (
     <main className="member-profile-page" dir={arabic ? "rtl" : "ltr"}>
-      <header className="member-topbar">
+      <header className="member-topbar compact-app-header">
         <Link className="brand" href="/" aria-label="Kufuo home"><span className="brand-mark"><img src="/kufuo-logo.svg" alt="Kufuo" /></span></Link>
         <nav><a href="/dashboard"><Compass size={17} />{t.dashboard}</a><a className="is-active" href="/account"><CircleUserRound size={17} />{t.profile}</a></nav>
         <div><button className="language-button" type="button" onClick={switchLanguage}><Languages size={18} /><span>{arabic ? "English" : "العربية"}</span></button><a className="account-signout" href={signOutHref}><LogOut size={17} />{t.signOut}</a></div>

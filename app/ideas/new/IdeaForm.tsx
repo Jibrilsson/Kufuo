@@ -21,7 +21,7 @@ export function IdeaForm({ userId }: { userId: string }) {
     const { error: insertError } = await createClient().from("ideas").insert({ owner_id: userId, title: form.title.trim(), summary: form.summary.trim(), stage: form.stage, city: form.city.trim() || null, skills_needed: splitList(form.skills), industries: splitList(form.industries), status: "open" });
     setSaving(false);
     if (insertError) { setError(insertError.message); return; }
-    router.push("/discover");
+    router.push("/dashboard");
     router.refresh();
   }
 

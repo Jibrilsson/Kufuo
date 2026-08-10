@@ -65,7 +65,7 @@ export async function loadDiscovery(userId: string) {
   return {
     profiles: (profiles ?? []) as FounderProfile[],
     ideas: (ideas ?? []) as Idea[],
-    savedProfileIds: (saved ?? []).map((row) => row.profile_id as string),
+    savedProfileIds: (saved ?? []).map((row: { profile_id: string }) => row.profile_id),
   };
 }
 
@@ -77,9 +77,35 @@ export async function toggleSavedProfile(userId: string, profileId: string, shou
   if (error) throw new Error(error.message);
 }
 
-export async function requestIntroduction(userId: string, recipientId: string, message: string) {
-  const { data, error } = await supabase().from("connection_requests").insert({ requester_id: userId, recipient_id: recipientId, message }).select("*").single();
+export async function requestIntroduction(userId: string, recipientId: string, message: string, ideaId?: string) {
+  const { data, error } = await supabase().from("connection_requests").insert({ requester_id: userId, recipient_id: recipientId, message, idea_id: ideaId ?? null }).select("*").single();
   return assert(data, error) as ConnectionRequest;
+}
+
+export async function loadOpportunityFeed(userId: string) {
+  const client = supabase();
+  const [{ data: ideas, error: ideaError }, { data: requests, error: requestError }] = await Promise.all([
+    client.from("ideas").select("*").or(`status.eq.open,owner_id.eq.${userId}`).order("created_at", { ascending: false }),
+    client.from("connection_requests").select("*").or(`requester_id.eq.${userId},recipient_id.eq.${userId}`).order("created_at", { ascending: false }),
+  ]);
+  if (ideaError) throw new Error(ideaError.message);
+  if (requestError) throw new Error(requestError.message);
+  const opportunityRows = (ideas ?? []) as Idea[];
+  const ownerIds = Array.from(new Set(opportunityRows.map((idea) => idea.owner_id)));
+  const { data: owners, error: ownerError } = ownerIds.length
+    ? await client.from("profiles").select("*").in("id", ownerIds)
+    : { data: [], error: null };
+  if (ownerError) throw new Error(ownerError.message);
+  const ownerMap = new Map(((owners ?? []) as FounderProfile[]).map((owner) => [owner.id, owner]));
+  return {
+    ideas: opportunityRows.map((idea) => ({ ...idea, owner: ownerMap.get(idea.owner_id) ?? null })),
+    requests: (requests ?? []) as ConnectionRequest[],
+  };
+}
+
+export async function updatePassword(password: string) {
+  const { error } = await supabase().auth.updateUser({ password });
+  if (error) throw new Error(error.message);
 }
 
 export async function loadConnections(userId: string) {
@@ -161,10 +187,10 @@ export async function loadFeed(userId: string) {
   return rows.map((post) => ({
     ...post,
     author: profileMap.get(post.author_id) ?? null,
-    reaction_count: (reactions ?? []).filter((row) => row.post_id === post.id).length,
-    comment_count: (comments ?? []).filter((row) => row.post_id === post.id).length,
-    reacted: (reactions ?? []).some((row) => row.post_id === post.id && row.user_id === userId),
-    saved: (saved ?? []).some((row) => row.post_id === post.id),
+    reaction_count: (reactions ?? []).filter((row: { post_id: string }) => row.post_id === post.id).length,
+    comment_count: (comments ?? []).filter((row: { post_id: string }) => row.post_id === post.id).length,
+    reacted: (reactions ?? []).some((row: { post_id: string; user_id: string }) => row.post_id === post.id && row.user_id === userId),
+    saved: (saved ?? []).some((row: { post_id: string }) => row.post_id === post.id),
   }));
 }
 

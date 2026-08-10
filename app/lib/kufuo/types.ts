@@ -40,12 +40,14 @@ export type Idea = {
   status: "draft" | "open" | "paused" | "closed";
   created_at: string;
   updated_at: string;
+  owner?: FounderProfile | null;
 };
 
 export type ConnectionRequest = {
   id: string;
   requester_id: string;
   recipient_id: string;
+  idea_id: string | null;
   message: string;
   status: "pending" | "accepted" | "declined" | "cancelled";
   responded_at: string | null;

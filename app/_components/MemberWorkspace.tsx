@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import {
   Bell,
@@ -11,6 +11,7 @@ import {
   Clock3,
   Compass,
   Filter,
+  KeyRound,
   Languages,
   Lightbulb,
   LockKeyhole,
@@ -18,11 +19,13 @@ import {
   Mail,
   MapPin,
   MessageCircle,
+  Pencil,
   Search,
   Send,
   Settings,
   ShieldCheck,
   Sparkles,
+  SlidersHorizontal,
   UserCheck,
   UserRound,
   UsersRound,
@@ -33,19 +36,22 @@ import {
   loadConversations,
   loadDiscovery,
   loadNotifications,
+  loadOwnProfile,
   loadSettings,
   markNotificationsRead,
   respondToIntroduction,
   saveSettings,
   sendConversationMessage,
   toggleSavedProfile,
+  updatePassword,
 } from "../lib/kufuo/client";
+import { getLanguageSnapshot, getServerLanguageSnapshot, setStoredLanguage, subscribeToLanguage } from "../lib/kufuo/language";
 import type { ConnectionRequest, Conversation, FounderProfile, Idea, Language, MemberSettings, Message, Notification } from "../lib/kufuo/types";
 
 type Mode = "discover" | "messages" | "connections" | "notifications" | "settings";
 
 const nav = [
-  ["Feed", "الخلاصة", "/dashboard", Compass],
+  ["Opportunities", "الفرص", "/dashboard", Compass],
   ["Discover", "استكشف", "/discover", Search],
   ["Messages", "الرسائل", "/messages", Mail],
   ["Connections", "العلاقات", "/connections", UsersRound],
@@ -83,10 +89,19 @@ function EmptyState({ title, body, href, action }: { title: string; body: string
   return <div className="workspace-empty"><span className="side-icon"><Sparkles size={21} /></span><h2>{title}</h2><p>{body}</p>{href && action && <a className="button button-small" href={href}>{action}<ChevronRight size={16} /></a>}</div>;
 }
 
-export function MemberWorkspace({ mode, userId, user, signOutHref }: { mode: Mode; userId: string; user: { displayName: string; email: string }; signOutHref: string }) {
-  const [language, setLanguage] = useState<Language>("en");
+type MemberWorkspaceProps = {
+  mode: Mode;
+  userId: string;
+  user: { displayName: string; email: string };
+  signOutHref: string;
+  previewProfile?: FounderProfile;
+  previewSettings?: MemberSettings;
+};
+
+export function MemberWorkspace({ mode, userId, user, signOutHref, previewProfile, previewSettings }: MemberWorkspaceProps) {
+  const language = useSyncExternalStore(subscribeToLanguage, getLanguageSnapshot, getServerLanguageSnapshot);
   const [query, setQuery] = useState("");
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!previewProfile);
   const [error, setError] = useState("");
   const [profiles, setProfiles] = useState<FounderProfile[]>([]);
   const [ideas, setIdeas] = useState<Idea[]>([]);
@@ -101,7 +116,8 @@ export function MemberWorkspace({ mode, userId, user, signOutHref }: { mode: Mod
   const [activeConversation, setActiveConversation] = useState(0);
   const [draft, setDraft] = useState("");
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [settingsState, setSettingsState] = useState<MemberSettings>({ user_id: userId, match_notifications: true, introduction_notifications: true, community_notifications: false, profile_visible: true, city_visible: true, preferred_language: "en" });
+  const [settingsState, setSettingsState] = useState<MemberSettings>(previewSettings ?? { user_id: userId, match_notifications: true, introduction_notifications: true, community_notifications: false, profile_visible: true, city_visible: true, preferred_language: "en" });
+  const [ownProfile, setOwnProfile] = useState<FounderProfile | null>(previewProfile ?? null);
   const arabic = language === "ar";
   const t = pageCopy[language];
   const [label, title, body] = t[mode];
@@ -113,6 +129,7 @@ export function MemberWorkspace({ mode, userId, user, signOutHref }: { mode: Mod
   }, [language, arabic]);
 
   useEffect(() => {
+    if (previewProfile) return;
     let alive = true;
     const run = async () => {
       try {
@@ -129,8 +146,11 @@ export function MemberWorkspace({ mode, userId, user, signOutHref }: { mode: Mod
           const data = await loadNotifications(userId);
           if (alive) setNotifications(data);
         } else if (mode === "settings") {
-          const data = await loadSettings(userId);
-          if (alive && data) { setSettingsState(data); setLanguage(data.preferred_language); }
+          const [data, profileData] = await Promise.all([loadSettings(userId), loadOwnProfile(userId)]);
+          if (alive) {
+            if (data) { setSettingsState(data); setStoredLanguage(data.preferred_language); }
+            setOwnProfile(profileData);
+          }
         }
       } catch (cause) {
         if (alive) setError(cause instanceof Error ? cause.message : "Could not load your Kufuo data.");
@@ -140,7 +160,7 @@ export function MemberWorkspace({ mode, userId, user, signOutHref }: { mode: Mod
     };
     run();
     return () => { alive = false; };
-  }, [mode, userId]);
+  }, [mode, userId, previewProfile]);
 
   const filteredProfiles = useMemo(() => profiles.filter((profile) => `${profile.full_name} ${profile.headline} ${profile.city} ${profile.skills.join(" ")} ${profile.industries.join(" ")}`.toLowerCase().includes(query.toLowerCase())), [profiles, query]);
   const filteredIdeas = useMemo(() => ideas.filter((idea) => `${idea.title} ${idea.summary} ${idea.city} ${idea.skills_needed.join(" ")} ${idea.industries.join(" ")}`.toLowerCase().includes(query.toLowerCase())), [ideas, query]);
@@ -186,9 +206,9 @@ export function MemberWorkspace({ mode, userId, user, signOutHref }: { mode: Mod
   }
 
   return <main className="workspace-app" dir={arabic ? "rtl" : "ltr"}>
-    <header className="workspace-topbar"><Brand /><label className="dash-search"><Search size={17} /><span className="sr-only">{t.search}</span><input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder={t.search} /></label><div><button className="language-button" type="button" onClick={() => setLanguage(arabic ? "en" : "ar")}><Languages size={18} /><span>{arabic ? "English" : "العربية"}</span></button><a className="dash-user-link" href="/account"><UserRound size={18} /><span>{firstName}</span></a></div></header>
+    <header className="workspace-topbar compact-app-header"><Brand /><label className="dash-search"><Search size={17} /><span className="sr-only">{t.search}</span><input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder={t.search} /></label><div><button className="language-button" type="button" onClick={() => setStoredLanguage(arabic ? "en" : "ar")}><Languages size={18} /><span>{arabic ? "English" : "العربية"}</span></button><a className="dash-user-link" href="/account"><UserRound size={18} /><span>{firstName}</span></a></div></header>
     <div className="workspace-grid"><aside className="workspace-sidebar"><nav className="dash-nav" aria-label="Member navigation">{nav.map(([en, ar, href, Icon]) => <a className={href === `/${mode}` ? "is-active" : ""} href={href} key={href}><Icon size={18} /><span>{arabic ? ar : en}</span>{href === "/notifications" && unreadCount > 0 && <b>{unreadCount}</b>}</a>)}</nav><div className="workspace-profile-note"><span className="dash-small-avatar"><UserRound size={18} /></span><div><strong>{user.displayName}</strong><span>{arabic ? "عضو كفو" : "Kufuo member"}</span></div></div><a className="dash-signout" href={signOutHref}><LogOut size={17} />{t.signOut}</a></aside>
-      <section className="workspace-main"><header className="workspace-heading"><p className="kicker">{label}</p><h1>{title}</h1><p>{body}</p></header>{error && <p className="workspace-error" role="alert">{error}</p>}{loading ? <div className="workspace-loading" role="status">{arabic ? "جارٍ تحميل بياناتك…" : "Loading your Kufuo workspace…"}</div> : <>{mode === "discover" && <Discover language={language} query={query} setQuery={setQuery} type={discoverType} setType={setDiscoverType} profiles={filteredProfiles} ideas={filteredIdeas} saved={savedProfileIds} onToggleSaved={toggleProfile} />}{mode === "connections" && <Connections language={language} userId={userId} tab={connectionTab} setTab={setConnectionTab} requests={requests} profiles={connectionProfiles} onRespond={respond} />}{mode === "messages" && <Messages language={language} userId={userId} conversations={conversations} profiles={conversationProfiles} messages={messages} active={activeConversation} setActive={setActiveConversation} draft={draft} setDraft={setDraft} send={sendMessage} />}{mode === "notifications" && <Notifications language={language} items={notifications} onReadAll={readAllNotifications} />}{mode === "settings" && <SettingsView language={language} state={settingsState} onChange={updateSettings} user={user} signOutHref={signOutHref} />}</>}</section>
+      <section className="workspace-main"><header className="workspace-heading"><p className="kicker">{label}</p><h1>{title}</h1><p>{body}</p></header>{error && <p className="workspace-error" role="alert">{error}</p>}{loading ? <div className="workspace-loading" role="status">{arabic ? "جارٍ تحميل بياناتك…" : "Loading your Kufuo workspace…"}</div> : <>{mode === "discover" && <Discover language={language} query={query} setQuery={setQuery} type={discoverType} setType={setDiscoverType} profiles={filteredProfiles} ideas={filteredIdeas} saved={savedProfileIds} onToggleSaved={toggleProfile} />}{mode === "connections" && <Connections language={language} userId={userId} tab={connectionTab} setTab={setConnectionTab} requests={requests} profiles={connectionProfiles} onRespond={respond} />}{mode === "messages" && <Messages language={language} userId={userId} conversations={conversations} profiles={conversationProfiles} messages={messages} active={activeConversation} setActive={setActiveConversation} draft={draft} setDraft={setDraft} send={sendMessage} />}{mode === "notifications" && <Notifications language={language} items={notifications} onReadAll={readAllNotifications} />}{mode === "settings" && <SettingsView language={language} state={settingsState} onChange={updateSettings} user={user} profile={ownProfile} signOutHref={signOutHref} />}</>}</section>
     </div>
   </main>;
 }
@@ -220,14 +240,55 @@ function Notifications({ language, items, onReadAll }: { language: Language; ite
   return <div className="notifications-view"><div className="workspace-toolbar"><span>{unread ? (ar ? `${unread} تنبيهات جديدة` : `${unread} new notifications`) : (ar ? "لا توجد تنبيهات غير مقروءة" : "No unread notifications")}</span><button className="button button-small button-secondary" type="button" onClick={onReadAll} disabled={!unread}><Check size={16} />{ar ? "تحديد الكل كمقروء" : "Mark all read"}</button></div>{items.length ? <div className="notification-list">{items.map((item) => <a className={!item.read_at ? "is-unread" : ""} href={item.href ?? "/dashboard"} key={item.id}><span className="side-icon"><Bell size={20} /></span><div><h2>{item.title}</h2>{item.body && <p>{item.body}</p>}<small>{new Date(item.created_at).toLocaleString(ar ? "ar-SA" : "en-SA")}</small></div><ChevronRight size={18} /></a>)}</div> : <EmptyState title={ar ? "كل شيء هادئ" : "You are all caught up"} body={ar ? "ستظهر هنا طلبات التعارف والرسائل المهمة." : "Introduction requests and important messages will appear here."} />}</div>;
 }
 
-function SettingsView({ language, state, onChange, user, signOutHref }: { language: Language; state: MemberSettings; onChange: (state: MemberSettings) => void; user: { displayName: string; email: string }; signOutHref: string }) {
+function SettingsView({ language, state, onChange, user, profile, signOutHref }: { language: Language; state: MemberSettings; onChange: (state: MemberSettings) => void; user: { displayName: string; email: string }; profile: FounderProfile | null; signOutHref: string }) {
   const ar = language === "ar";
-  const rows: Array<{ key: keyof MemberSettings; icon: typeof Sparkles; title: string; body: string }> = [
-    { key: "match_notifications", icon: Sparkles, title: ar ? "تنبيهات التوافق" : "Match recommendations", body: ar ? "أرسل لي التوافقات الجديدة عالية الجودة." : "Notify me about strong new matches." },
-    { key: "introduction_notifications", icon: UserCheck, title: ar ? "طلبات التعارف" : "Introduction requests", body: ar ? "نبهني عند وصول أو قبول طلب تعارف." : "Notify me when an introduction arrives or is accepted." },
-    { key: "community_notifications", icon: UsersRound, title: ar ? "نشاط المجتمع" : "Community activity", body: ar ? "أرسل لي أهم تحديثات المجتمع فقط." : "Send only meaningful community updates." },
-    { key: "profile_visible", icon: ShieldCheck, title: ar ? "ظهور الملف" : "Profile visibility", body: ar ? "اسمح للأعضاء المكتملين باكتشاف ملفي." : "Allow complete members to discover my profile." },
-    { key: "city_visible", icon: MapPin, title: ar ? "إظهار المدينة" : "Show my city", body: ar ? "أظهر مدينتي داخل الملف العام." : "Show my city on my public member profile." },
+  const [tab, setTab] = useState<"profile" | "preferences" | "security" | "account">("profile");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [passwordNotice, setPasswordNotice] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [savingPassword, setSavingPassword] = useState(false);
+  const tabs = [
+    { id: "profile" as const, icon: CircleUserRound, label: ar ? "الملف" : "Profile" },
+    { id: "preferences" as const, icon: SlidersHorizontal, label: ar ? "التفضيلات" : "Preferences" },
+    { id: "security" as const, icon: KeyRound, label: ar ? "الأمان" : "Security" },
+    { id: "account" as const, icon: LockKeyhole, label: ar ? "الحساب" : "Account" },
   ];
-  return <div className="settings-layout"><section className="settings-list">{rows.map((row) => { const Icon = row.icon; const checked = Boolean(state[row.key]); return <div className="settings-row" key={row.key}><span className="side-icon"><Icon size={20} /></span><div><h2>{row.title}</h2><p>{row.body}</p></div><button className={`toggle ${checked ? "is-on" : ""}`} type="button" role="switch" aria-checked={checked} onClick={() => onChange({ ...state, [row.key]: !checked })}><span /></button></div>; })}</section><aside className="settings-account"><div className="member-side-heading"><LockKeyhole size={20} /><span>{ar ? "الحساب المتصل" : "Connected account"}</span></div><div className="settings-user"><span className="dash-small-avatar"><UserRound size={20} /></span><div><strong>{user.displayName}</strong><span>{user.email}</span></div></div><p><ShieldCheck size={16} />{ar ? "جلسة كفو آمنة وموثقة" : "Secure, verified Kufuo session"}</p><a className="button button-secondary" href={signOutHref}><LogOut size={17} />{ar ? "تسجيل الخروج" : "Sign out"}</a></aside></div>;
+  const rows: Array<{ key: keyof MemberSettings; icon: typeof Sparkles; title: string; body: string }> = [
+    { key: "match_notifications", icon: Sparkles, title: ar ? "فرص مناسبة لك" : "Recommended opportunities", body: ar ? "نبهني عند ظهور فرصة تناسب مهاراتي وتفضيلاتي." : "Notify me when a new opportunity fits my skills and preferences." },
+    { key: "introduction_notifications", icon: UserCheck, title: ar ? "طلبات الانضمام والتعارف" : "Applications and introductions", body: ar ? "نبهني عند وصول طلب أو تغيّر حالته." : "Notify me when a request arrives or its status changes." },
+    { key: "community_notifications", icon: UsersRound, title: ar ? "ملخصات كفو" : "Kufuo summaries", body: ar ? "أرسل لي ملخصًا مختصرًا بأهم الفرص والنشاط." : "Send me a concise summary of relevant opportunities and activity." },
+    { key: "profile_visible", icon: ShieldCheck, title: ar ? "ظهور الملف" : "Profile visibility", body: ar ? "اسمح للأعضاء المكتملين باكتشاف ملفي." : "Allow complete members to discover my profile." },
+    { key: "city_visible", icon: MapPin, title: ar ? "إظهار الموقع" : "Show my location", body: ar ? "أظهر موقعي داخل الملف العام." : "Show my location on my public profile." },
+  ];
+
+  async function savePassword() {
+    setPasswordError("");
+    setPasswordNotice("");
+    if (password.length < 8) { setPasswordError(ar ? "استخدم كلمة مرور من ٨ أحرف على الأقل." : "Use at least 8 characters."); return; }
+    if (password !== confirmPassword) { setPasswordError(ar ? "كلمتا المرور غير متطابقتين." : "The passwords do not match."); return; }
+    setSavingPassword(true);
+    try {
+      await updatePassword(password);
+      setPassword("");
+      setConfirmPassword("");
+      setPasswordNotice(ar ? "تم تحديث كلمة المرور." : "Password updated.");
+    } catch (cause) {
+      setPasswordError(cause instanceof Error ? cause.message : "Could not update the password.");
+    } finally {
+      setSavingPassword(false);
+    }
+  }
+
+  return <div className="settings-shell">
+    <nav className="settings-tabs" aria-label={ar ? "أقسام الإعدادات" : "Settings sections"}>{tabs.map(({ id, icon: Icon, label }) => <button className={tab === id ? "is-active" : ""} type="button" onClick={() => setTab(id)} key={id}><Icon size={17} />{label}</button>)}</nav>
+
+    {tab === "profile" && <div className="settings-profile-grid"><section className="settings-panel settings-profile-summary"><div className="settings-profile-head"><span className="dash-profile-avatar">{profile?.avatar_url ? <img src={profile.avatar_url} alt="" /> : <UserRound size={28} />}</span><div><small>{ar ? "ملفك العام" : "Your public profile"}</small><h2>{profile?.full_name ?? user.displayName}</h2><p>{profile?.headline ?? (ar ? "أضف عنوانك المهني" : "Add your professional headline")}</p></div><strong>{profile?.profile_strength ?? 20}%</strong></div><div className="member-progress"><span style={{ width: `${profile?.profile_strength ?? 20}%` }} /></div><p>{ar ? "حدّث خبرتك ومهاراتك وتفضيلاتك ليعرف المؤسسون متى تكون الشخص المناسب." : "Keep your experience, skills, and founder preferences current so people know when you are the right fit."}</p><a className="button" href="/account"><Pencil size={16} />{ar ? "تعديل الملف" : "Edit profile"}</a></section><aside className="settings-account"><div className="member-side-heading"><ShieldCheck size={20} /><span>{ar ? "حالة الملف" : "Profile status"}</span></div><dl className="settings-status-list"><div><dt>{ar ? "الظهور" : "Visibility"}</dt><dd>{state.profile_visible ? (ar ? "ظاهر" : "Visible") : (ar ? "مخفي" : "Hidden")}</dd></div><div><dt>{ar ? "اكتمال الملف" : "Completion"}</dt><dd>{profile?.profile_strength ?? 20}%</dd></div><div><dt>LinkedIn</dt><dd>{profile?.linkedin_url ? (ar ? "مرتبط" : "Added") : (ar ? "غير مضاف" : "Not added")}</dd></div></dl><a className="button button-secondary" href={profile?.id ? `/profile/${profile.id}` : "/account"}>{ar ? "معاينة الملف العام" : "Preview public profile"}<ChevronRight className="directional-icon" size={16} /></a></aside></div>}
+
+    {tab === "preferences" && <section className="settings-panel settings-list"><header><span className="side-icon"><SlidersHorizontal size={20} /></span><div><h2>{ar ? "التنبيهات والخصوصية" : "Notifications and privacy"}</h2><p>{ar ? "اختر ما يصلك وما يظهر في ملفك العام." : "Choose what reaches you and what appears on your public profile."}</p></div></header>{rows.map((row) => { const Icon = row.icon; const checked = Boolean(state[row.key]); return <div className="settings-row" key={row.key}><span className="side-icon"><Icon size={20} /></span><div><h2>{row.title}</h2><p>{row.body}</p></div><button className={`toggle ${checked ? "is-on" : ""}`} type="button" role="switch" aria-checked={checked} onClick={() => onChange({ ...state, [row.key]: !checked })}><span /></button></div>; })}</section>}
+
+    {tab === "security" && <section className="settings-panel security-settings"><div className="settings-section-heading"><span className="side-icon"><KeyRound size={20} /></span><div><h2>{ar ? "تغيير كلمة المرور" : "Change password"}</h2><p>{ar ? "استخدم كلمة مرور قوية لا تستخدمها في موقع آخر." : "Use a strong password you do not reuse elsewhere."}</p></div></div><div className="settings-form-grid"><label><span>{ar ? "كلمة المرور الجديدة" : "New password"}</span><input type="password" autoComplete="new-password" value={password} onChange={(event) => setPassword(event.target.value)} /></label><label><span>{ar ? "تأكيد كلمة المرور" : "Confirm password"}</span><input type="password" autoComplete="new-password" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} /></label></div>{passwordError && <p className="workspace-error" role="alert">{passwordError}</p>}{passwordNotice && <p className="settings-success" role="status"><Check size={16} />{passwordNotice}</p>}<button className="button" type="button" disabled={savingPassword} onClick={savePassword}><KeyRound size={16} />{savingPassword ? (ar ? "جارٍ التحديث…" : "Updating…") : (ar ? "تحديث كلمة المرور" : "Update password")}</button></section>}
+
+    {tab === "account" && <div className="settings-account-grid"><section className="settings-panel"><div className="settings-section-heading"><span className="side-icon"><LockKeyhole size={20} /></span><div><h2>{ar ? "الحساب المتصل" : "Connected account"}</h2><p>{ar ? "هذه البيانات مرتبطة بجلسة تسجيل الدخول الحالية." : "These details are linked to your current sign-in session."}</p></div></div><div className="settings-user"><span className="dash-small-avatar"><UserRound size={20} /></span><div><strong>{user.displayName}</strong><span>{user.email}</span></div></div><div className="account-security-note"><ShieldCheck size={17} /><span>{ar ? "جلسة مشفرة وبيانات التواصل خاصة." : "Encrypted session and private contact details."}</span></div><a className="button button-secondary" href={signOutHref}><LogOut size={17} />{ar ? "تسجيل الخروج من هذا الجهاز" : "Sign out on this device"}</a></section><aside className="settings-account settings-pause-card"><div className="member-side-heading"><CircleUserRound size={20} /><span>{ar ? "إيقاف الظهور مؤقتًا" : "Pause discovery"}</span></div><p>{ar ? "إذا احتجت فترة راحة، أخفِ ملفك من نتائج البحث بدل حذف حسابك." : "Need a break? Hide your profile from discovery without deleting your account."}</p><button className="button button-secondary" type="button" onClick={() => onChange({ ...state, profile_visible: !state.profile_visible })}>{state.profile_visible ? (ar ? "إخفاء الملف" : "Hide profile") : (ar ? "إظهار الملف" : "Show profile")}</button></aside></div>}
+  </div>;
 }
