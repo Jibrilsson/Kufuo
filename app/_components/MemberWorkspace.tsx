@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
-import Link from "next/link";
 import {
   Bell,
   Bookmark,
@@ -12,7 +11,6 @@ import {
   Compass,
   Filter,
   KeyRound,
-  Languages,
   Lightbulb,
   LockKeyhole,
   LogOut,
@@ -31,6 +29,7 @@ import {
   UsersRound,
   X,
 } from "lucide-react";
+import { MemberHeader } from "./MemberHeader";
 import {
   loadConnections,
   loadConversations,
@@ -81,10 +80,6 @@ const pageCopy = {
   },
 } as const;
 
-function Brand() {
-  return <Link className="brand" href="/" aria-label="Kufuo home"><span className="brand-mark"><img src="/kufuo-logo.svg" alt="Kufuo" /></span></Link>;
-}
-
 function EmptyState({ title, body, href, action }: { title: string; body: string; href?: string; action?: string }) {
   return <div className="workspace-empty"><span className="side-icon"><Sparkles size={21} /></span><h2>{title}</h2><p>{body}</p>{href && action && <a className="button button-small" href={href}>{action}<ChevronRight size={16} /></a>}</div>;
 }
@@ -121,7 +116,6 @@ export function MemberWorkspace({ mode, userId, user, signOutHref, previewProfil
   const arabic = language === "ar";
   const t = pageCopy[language];
   const [label, title, body] = t[mode];
-  const firstName = user.displayName.includes("@") ? user.email.split("@")[0] : user.displayName.split(" ")[0];
 
   useEffect(() => {
     document.documentElement.lang = language;
@@ -206,7 +200,7 @@ export function MemberWorkspace({ mode, userId, user, signOutHref, previewProfil
   }
 
   return <main className="workspace-app" dir={arabic ? "rtl" : "ltr"}>
-    <header className="workspace-topbar compact-app-header"><Brand /><label className="dash-search"><Search size={17} /><span className="sr-only">{t.search}</span><input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder={t.search} /></label><div><button className="language-button" type="button" onClick={() => setStoredLanguage(arabic ? "en" : "ar")}><Languages size={18} /><span>{arabic ? "English" : "العربية"}</span></button><a className="dash-user-link" href="/account"><UserRound size={18} /><span>{firstName}</span></a></div></header>
+    <MemberHeader user={user} active={mode === "settings" ? "settings" : mode === "notifications" ? undefined : mode} searchValue={query} onSearchChange={setQuery} searchPlaceholder={t.search} />
     <div className="workspace-grid"><aside className="workspace-sidebar"><nav className="dash-nav" aria-label="Member navigation">{nav.map(([en, ar, href, Icon]) => <a className={href === `/${mode}` ? "is-active" : ""} href={href} key={href}><Icon size={18} /><span>{arabic ? ar : en}</span>{href === "/notifications" && unreadCount > 0 && <b>{unreadCount}</b>}</a>)}</nav><div className="workspace-profile-note"><span className="dash-small-avatar"><UserRound size={18} /></span><div><strong>{user.displayName}</strong><span>{arabic ? "عضو كفو" : "Kufuo member"}</span></div></div><a className="dash-signout" href={signOutHref}><LogOut size={17} />{t.signOut}</a></aside>
       <section className="workspace-main"><header className="workspace-heading"><p className="kicker">{label}</p><h1>{title}</h1><p>{body}</p></header>{error && <p className="workspace-error" role="alert">{error}</p>}{loading ? <div className="workspace-loading" role="status">{arabic ? "جارٍ تحميل بياناتك…" : "Loading your Kufuo workspace…"}</div> : <>{mode === "discover" && <Discover language={language} query={query} setQuery={setQuery} type={discoverType} setType={setDiscoverType} profiles={filteredProfiles} ideas={filteredIdeas} saved={savedProfileIds} onToggleSaved={toggleProfile} />}{mode === "connections" && <Connections language={language} userId={userId} tab={connectionTab} setTab={setConnectionTab} requests={requests} profiles={connectionProfiles} onRespond={respond} />}{mode === "messages" && <Messages language={language} userId={userId} conversations={conversations} profiles={conversationProfiles} messages={messages} active={activeConversation} setActive={setActiveConversation} draft={draft} setDraft={setDraft} send={sendMessage} />}{mode === "notifications" && <Notifications language={language} items={notifications} onReadAll={readAllNotifications} />}{mode === "settings" && <SettingsView language={language} state={settingsState} onChange={updateSettings} user={user} profile={ownProfile} signOutHref={signOutHref} />}</>}</section>
     </div>

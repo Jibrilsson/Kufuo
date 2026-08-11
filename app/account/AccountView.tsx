@@ -1,18 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import {
   BriefcaseBusiness,
   Check,
   ChevronRight,
-  CircleUserRound,
   Clock3,
-  Compass,
   Languages,
   Lightbulb,
   LockKeyhole,
-  LogOut,
   Mail,
   MapPin,
   Pencil,
@@ -22,6 +18,7 @@ import {
   UserRound,
 } from "lucide-react";
 import { FaLinkedin } from "react-icons/fa";
+import { MemberHeader } from "../_components/MemberHeader";
 import { saveOwnProfile } from "../lib/kufuo/client";
 import { normalizeLinkedinUrl, profileStrength } from "../lib/kufuo/profile";
 import { emptyProfile, type FounderProfile } from "../lib/kufuo/types";
@@ -171,7 +168,7 @@ function profileToForm(profile: FounderProfile): ProfileForm {
 
 const splitList = (value: string) => value.split(",").map((item) => item.trim()).filter(Boolean);
 
-export function AccountView({ userId, user, initialProfile, signOutHref }: { userId: string; user: { displayName: string; email: string }; initialProfile: FounderProfile | null; signOutHref: string }) {
+export function AccountView({ userId, user, initialProfile }: { userId: string; user: { displayName: string; email: string }; initialProfile: FounderProfile | null; signOutHref: string }) {
   const startingProfile = initialProfile ?? emptyProfile(userId, user.displayName);
   const [language, setLanguage] = useState<Language>("en");
   const [editing, setEditing] = useState(!startingProfile.onboarding_complete);
@@ -193,11 +190,6 @@ export function AccountView({ userId, user, initialProfile, signOutHref }: { use
     document.documentElement.dir = arabic ? "rtl" : "ltr";
     window.localStorage.setItem("kufuo:language", language);
   }, [language, arabic]);
-
-  function switchLanguage() {
-    const nextLanguage: Language = arabic ? "en" : "ar";
-    setLanguage(nextLanguage);
-  }
 
   function cancelEdit() {
     setDetails(profileToForm(profile));
@@ -267,11 +259,7 @@ export function AccountView({ userId, user, initialProfile, signOutHref }: { use
 
   return (
     <main className="member-profile-page" dir={arabic ? "rtl" : "ltr"}>
-      <header className="member-topbar compact-app-header">
-        <Link className="brand" href="/" aria-label="Kufuo home"><span className="brand-mark"><img src="/kufuo-logo.svg" alt="Kufuo" /></span></Link>
-        <nav><a href="/dashboard"><Compass size={17} />{t.dashboard}</a><a className="is-active" href="/account"><CircleUserRound size={17} />{t.profile}</a></nav>
-        <div><button className="language-button" type="button" onClick={switchLanguage}><Languages size={18} /><span>{arabic ? "English" : "العربية"}</span></button><a className="account-signout" href={signOutHref}><LogOut size={17} />{t.signOut}</a></div>
-      </header>
+      <MemberHeader user={user} active="profile" avatarUrl={profile.avatar_url} language={language} onLanguageChange={setLanguage} />
 
       <section className="member-hero section-frame">
         <div className="member-avatar"><UserRound size={54} /></div>

@@ -5,5 +5,5 @@ export const dynamic = "force-dynamic";
 
 export default async function NewIdeaPage() {
   const { user } = await getCompletedMember("/ideas/new");
-  return <IdeaForm userId={user.userId} />;
+  return <IdeaForm userId={user.userId} user={{ displayName: user.displayName, email: user.email }} />;
 }

@@ -57,6 +57,39 @@ final result: passed
 
 ---
 
+# Kufuo shared member header and promotional banner — design QA
+
+## Evidence
+
+- Banner reference: `/var/folders/yl/5748p6413bb1rxb3g5243m540000gn/T/codex-clipboard-6fcba57c-4ea2-4a7e-87c4-6e9df41e145f.png`
+- Header reference: `/var/folders/yl/5748p6413bb1rxb3g5243m540000gn/T/codex-clipboard-b61750d9-df73-4d00-ae87-b863f5dddd70.png`
+- Kufuo implementation: `/private/tmp/kufuo-dashboard-banner-final.png`
+- Combined comparison: `/private/tmp/kufuo-banner-comparison.png`
+- Desktop viewport: 1280 × 720 px.
+- Mobile viewport: 390 × 844 px.
+
+## Visible comparison
+
+The implementation preserves the reference structure: a compact single-row member header, a dark editorial promotion panel, one direct action, a right-side visual, carousel indicators, and a slim follow-up strip. It adapts the pattern to Kufuo using the existing Arabic logo, founder-collaboration illustration, white/black/lime palette, outlined controls, and founder-specific content.
+
+## Interaction and responsive checks
+
+- Verified the second carousel control replaces both the banner title and action.
+- Verified the follow-up strip dismisses and leaves the main banner intact.
+- Verified header search remains available on desktop and mobile.
+- Verified the mobile header keeps logo, notifications, language, profile, search, and horizontally scrollable product navigation accessible.
+- Shared header is applied to dashboard, discover, messages, connections, notifications, settings, account, public member profiles, and the new-opportunity form; public, login, legal, and onboarding pages retain their purpose-specific headers.
+
+## Findings
+
+- No actionable P0, P1, or P2 visual differences remain.
+- The illustration uses a real existing Kufuo product asset rather than a placeholder or CSS drawing.
+- Lint and production build complete successfully; remaining image optimization notices are pre-existing non-blocking warnings.
+
+final result: passed
+
+---
+
 # Kufuo opportunities dashboard and settings — design QA
 
 ## Evidence

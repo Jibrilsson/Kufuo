@@ -3,7 +3,6 @@ import {
   BriefcaseBusiness,
   CheckCircle2,
   Clock3,
-  Compass,
   Eye,
   Languages,
   MapPin,
@@ -17,6 +16,7 @@ import { normalizeLinkedinUrl } from "../../lib/kufuo/profile";
 import { createClient } from "../../lib/supabase/server";
 import type { FounderProfile } from "../../lib/kufuo/types";
 import { IntroductionButton } from "./IntroductionButton";
+import { MemberHeader } from "../../_components/MemberHeader";
 
 export const dynamic = "force-dynamic";
 
@@ -45,11 +45,7 @@ export default async function FounderProfilePage({ params }: { params: Promise<{
 
   return (
     <main className="member-profile-page">
-      <header className="member-topbar">
-        <a className="brand" href="/" aria-label="Kufuo home"><span className="brand-mark"><img src="/kufuo-logo.svg" alt="Kufuo" /></span></a>
-        <nav><a href="/dashboard"><Compass size={17} />Dashboard</a><a href="/discover">Discover</a></nav>
-        <div><a className="button button-small button-secondary" href="/discover">Back to discover</a></div>
-      </header>
+      <MemberHeader user={{ displayName: user.displayName, email: user.email }} active="discover" avatarUrl={isOwner ? profile.avatar_url : null} />
 
       <section className="member-hero section-frame">
         <div className="member-avatar">{profile.avatar_url ? <img src={profile.avatar_url} alt={profile.full_name ?? "Founder"} /> : <UserRound size={54} />}</div>

@@ -1,14 +1,12 @@
 "use client";
 
 import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
-import Link from "next/link";
 import {
   Bell,
   BriefcaseBusiness,
   ChevronRight,
   CircleUserRound,
   FileText,
-  Languages,
   Lightbulb,
   ListFilter,
   LockKeyhole,
@@ -26,8 +24,10 @@ import {
   X,
 } from "lucide-react";
 import { loadOpportunityFeed, requestIntroduction } from "../lib/kufuo/client";
-import { getLanguageSnapshot, getServerLanguageSnapshot, setStoredLanguage, subscribeToLanguage } from "../lib/kufuo/language";
+import { getLanguageSnapshot, getServerLanguageSnapshot, subscribeToLanguage } from "../lib/kufuo/language";
 import type { ConnectionRequest, FounderProfile, Idea, Language } from "../lib/kufuo/types";
+import { MemberHeader } from "../_components/MemberHeader";
+import { MemberPromoBanner } from "../_components/MemberPromoBanner";
 
 const copy = {
   en: {
@@ -139,7 +139,6 @@ export function DashboardView({ userId, user, profile, signOutHref, initialIdeas
   const [submitting, setSubmitting] = useState(false);
   const arabic = language === "ar";
   const t = copy[language];
-  const firstName = user.displayName.includes("@") ? user.email.split("@")[0] : user.displayName.split(" ")[0];
   const progress = profile?.profile_strength ?? 20;
 
   useEffect(() => {
@@ -195,11 +194,8 @@ export function DashboardView({ userId, user, profile, signOutHref, initialIdeas
 
   return (
     <main className="founder-app opportunity-app" dir={arabic ? "rtl" : "ltr"}>
-      <header className="dash-topbar compact-app-header">
-        <Link className="brand" href="/" aria-label="Kufuo home"><span className="brand-mark"><img src="/kufuo-logo.svg" alt="Kufuo" /></span></Link>
-        <label className="dash-search"><Search size={16} /><span className="sr-only">{t.search}</span><input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder={t.search} /></label>
-        <div className="dash-top-actions"><button className="language-button" type="button" onClick={() => setStoredLanguage(arabic ? "en" : "ar")}><Languages size={17} /><span>{arabic ? "English" : "العربية"}</span></button><a className="dash-icon-link" href="/notifications" aria-label={t.nav[4]}><Bell size={18} /></a><a className="dash-user-link" href="/account"><UserRound size={17} /><span>{firstName}</span></a></div>
-      </header>
+      <MemberHeader user={user} active="opportunities" avatarUrl={profile?.avatar_url} searchValue={query} onSearchChange={setQuery} searchPlaceholder={t.search} />
+      <MemberPromoBanner language={language} />
 
       <div className="dashboard-grid opportunity-grid">
         <aside className="dash-left">
