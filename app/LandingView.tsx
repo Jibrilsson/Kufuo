@@ -40,28 +40,50 @@ function Landing() {
         </nav>
         <div className="kx-topbar-end">
           <button type="button" className="kx-ghost" onClick={switchLanguage}><Languages size={17} />{arabic ? "English" : "العربية"}</button>
-          {signedIn ? <a className="button button-small" href="/home">{t("My account", "حسابي")}</a> : <a className="button button-small button-secondary" href="/login?returnTo=%2Fhome">{t("Log in", "دخول")}</a>}
+          {signedIn ? <a className="button button-small" href="/home">{t("My account", "حسابي")}</a> : <><a className="kx-ghost" href="/login?returnTo=%2Fhome">{t("Log in", "دخول")}</a><a className="button button-small" href="/login?mode=signup&returnTo=%2Fhome">{t("Sign up", "سجّل")}</a></>}
         </div>
       </header>
 
       <section className="kx-hero">
-        <p className="kx-kicker">{t("Kufuo · كفو", "كفو · Kufuo")}</p>
-        <h1>{t("Vetted Arab expertise, by the hour.", "خبرة عربية موثّقة، بالساعة.")}</h1>
-        <p className="kx-lead">
-          {t(
-            "Kufuo finds Arab professionals in every country, checks their expertise with an Arabic-speaking AI interviewer and a human reviewer, and lets companies book their time by the hour.",
-            "كفو يستقطب المحترفين العرب من كل الدول، ويتحقق من خبرتهم بمحاور ذكي يتكلم عربي ومراجع بشري، ويخلي الشركات تحجز وقتهم بالساعة."
-          )}
-        </p>
-        <div className="kx-hero-actions">
-          <a className="button button-lime" href="#request">{t("Request an expert", "اطلب خبير")}<ArrowRight size={17} className="kx-flip" /></a>
-          <a className="button button-secondary" href={applyHref}>{t("Apply as an expert", "قدّم كخبير")}</a>
+        <div className="kx-hero-copy">
+          <p className="kx-kicker">{t("Arab expert network", "شبكة الخبراء العرب")}</p>
+          <h1>{t("Vetted Arab expertise, by the hour.", "خبرة عربية موثّقة، بالساعة.")}</h1>
+          <p className="kx-lead">
+            {t(
+              "Kufuo finds Arab professionals in every country, checks their expertise with an Arabic-speaking AI interviewer and a human reviewer, and lets companies book their time by the hour.",
+              "كفو يستقطب المحترفين العرب من كل الدول، ويتحقق من خبرتهم بمحاور ذكي يتكلم عربي ومراجع بشري، ويخلي الشركات تحجز وقتهم بالساعة."
+            )}
+          </p>
+          <div className="kx-hero-actions">
+            <a className="button" href="#request">{t("Request an expert", "اطلب خبير")}<ArrowRight size={17} /></a>
+            <a className="button button-secondary" href={applyHref}>{t("Apply as an expert", "قدّم كخبير")}</a>
+          </div>
+          <ul className="kx-hero-facts">
+            <li><BadgeCheck size={17} />{t("Every expert interviewed and reviewed by a person", "كل خبير مقابَل ومراجَع من شخص")}</li>
+            <li><Clock3 size={17} />{t("Pay only for hours you approve", "تدفع بس على الساعات اللي تعتمدها")}</li>
+            <li><MessagesSquare size={17} />{t("Arabic, English, or both", "عربي، إنجليزي، أو الاثنين")}</li>
+          </ul>
         </div>
-        <ul className="kx-hero-facts">
-          <li><BadgeCheck size={18} />{t("Every expert interviewed and reviewed by a person", "كل خبير مقابَل ومراجَع من شخص")}</li>
-          <li><Clock3 size={18} />{t("Pay only for hours you approve", "تدفع بس على الساعات اللي تعتمدها")}</li>
-          <li><MessagesSquare size={18} />{t("Arabic, English, or both", "عربي، إنجليزي، أو الاثنين")}</li>
-        </ul>
+        <aside className="kx-demo" aria-label={t("Example booking", "مثال على حجز")}>
+          <span className="kx-demo-label">{t("Booking · this week", "حجز · هذا الأسبوع")}</span>
+          <div className="kx-demo-person">
+            <span className="kx-demo-avatar" aria-hidden="true">{t("LH", "ل")}</span>
+            <div>
+              <strong>{t("Senior contracts lawyer", "محامية عقود أولى")}</strong>
+              <span>{t("Law · Arabic + English · vetted", "القانون · عربي وإنجليزي · موثّقة")}</span>
+            </div>
+          </div>
+          <div className="kx-demo-rows">
+            <div><span>{t("Mon · Model answer review", "الإثنين · مراجعة إجابات النموذج")}</span><b dir="ltr">3.0 h</b></div>
+            <div><span>{t("Tue · Arabic legal rubric", "الثلاثاء · معايير تقييم قانونية")}</span><b dir="ltr">2.5 h</b></div>
+            <div><span>{t("Wed · Scoring session", "الأربعاء · جلسة تقييم")}</span><b dir="ltr">4.0 h</b></div>
+          </div>
+          <div className="kx-demo-total">
+            <span className="kx-demo-label">{t("Approved this week", "معتمد هذا الأسبوع")}</span>
+            <strong dir="ltr">9.5 h</strong>
+          </div>
+          <span className="kx-demo-toast"><BadgeCheck size={16} />{t("Hours approved by your team", "اعتمد فريقك الساعات")}</span>
+        </aside>
       </section>
 
       <section className="kx-band" id="companies">
@@ -91,7 +113,7 @@ function Landing() {
           <li><strong>3</strong><span>{t("A person on our team reviews it. AI never decides.", "شخص من فريقنا يراجعها، والذكاء الاصطناعي ما يقرر.")}</span></li>
           <li><strong>4</strong><span>{t("Accept bookings, log hours, get paid.", "اقبل الحجوزات، سجّل ساعاتك، واستلم فلوسك.")}</span></li>
         </ol>
-        <a className="button button-lime" href={applyHref}>{t("Apply as an expert", "قدّم كخبير")}</a>
+        <a className="button" href={applyHref}>{t("Apply as an expert", "قدّم كخبير")}</a>
       </section>
 
       <section className="kx-band" id="request">
