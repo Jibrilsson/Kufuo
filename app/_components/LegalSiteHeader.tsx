@@ -13,8 +13,8 @@ export function LegalSiteHeader({ language, onLanguageChange }: { language: Lang
   const arabic = language === "ar";
   const home = arabic ? "/?lang=ar" : "/";
   const navigation = arabic
-    ? [["اكتشف", "/?lang=ar#discover"], ["كيف تعمل المنصة", "/?lang=ar#how"], ["رحلة المؤسس", "/?lang=ar#journey"], ["المجتمع", "/?lang=ar#community"]]
-    : [["Discover", "/#discover"], ["How it works", "/#how"], ["Founder journey", "/#journey"], ["Community", "/#community"]];
+    ? [["للخبراء", "/?lang=ar#experts"], ["للشركات", "/?lang=ar#companies"], ["اطلب خبير", "/?lang=ar#request"]]
+    : [["For experts", "/#experts"], ["For companies", "/#companies"], ["Request an expert", "/#request"]];
 
   useEffect(() => {
     const supabase = createClient();
@@ -39,10 +39,10 @@ export function LegalSiteHeader({ language, onLanguageChange }: { language: Lang
   }, []);
 
   const signedIn = authState === "signed-in";
-  const secondaryAuthHref = signedIn ? "/account" : "/login?returnTo=%2Fdashboard";
-  const primaryAuthHref = signedIn ? "/dashboard" : "/login?mode=signup&returnTo=%2Faccount";
-  const secondaryAuthLabel = signedIn ? (arabic ? "ملفي" : "My profile") : (arabic ? "دخول" : "Log in");
-  const primaryAuthLabel = signedIn ? (arabic ? "لوحة التحكم" : "Dashboard") : (arabic ? "انضم للمجتمع" : "Join the community");
+  const secondaryAuthHref = signedIn ? "/home" : "/login?returnTo=%2Fhome";
+  const primaryAuthHref = signedIn ? "/home" : "/login?mode=signup&returnTo=%2Fapply";
+  const secondaryAuthLabel = signedIn ? (arabic ? "حسابي" : "My account") : (arabic ? "دخول" : "Log in");
+  const primaryAuthLabel = signedIn ? (arabic ? "حسابي" : "My account") : (arabic ? "قدّم كخبير" : "Apply as an expert");
 
   return (
     <header className="site-header legal-site-header" dir={arabic ? "rtl" : "ltr"}>

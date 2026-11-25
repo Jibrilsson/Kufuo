@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import { headers } from "next/headers";
 import "./globals.css";
+import "./product.css";
 
 const geist = Geist({
   variable: "--font-geist",
@@ -15,25 +16,25 @@ export async function generateMetadata(): Promise<Metadata> {
   const origin = `${protocol}://${host}`;
 
   return {
-    title: "Kufuo | كفو — Find someone worthy of building with",
-    description: "A focused community for finding compatible cofounders, exploring credible ideas, and learning how you work together before committing.",
+    title: "Kufuo | كفو — Vetted Arab experts, by the hour",
+    description: "Kufuo vets Arab professionals with an AI interview and human review, and companies book their expertise by the hour.",
     applicationName: "Kufuo | كفو",
-    keywords: ["cofounder", "startups", "founders", "business partner", "founder community"],
+    keywords: ["Arab experts", "expert network", "Arabic AI evaluation", "hourly experts", "كفو"],
     icons: {
       icon: "/kufuo-mark-256.png",
       apple: "/kufuo-mark-256.png",
     },
     openGraph: {
-      title: "Find someone worthy of building with.",
-      description: "Meet serious builders, explore credible ideas, and test how you work together before making the commitment.",
+      title: "Vetted Arab expertise, by the hour.",
+      description: "Kufuo vets Arab professionals and companies book their time by the hour.",
       type: "website",
       siteName: "Kufuo | كفو",
-      images: [{ url: `${origin}/og-kufuo-mark.png`, width: 1200, height: 630, alt: "Kufuo — Find someone worthy of building with" }],
+      images: [{ url: `${origin}/og-kufuo-mark.png`, width: 1200, height: 630, alt: "Kufuo — Vetted Arab experts, by the hour" }],
     },
     twitter: {
       card: "summary_large_image",
-      title: "Find someone worthy of building with.",
-      description: "A focused founder community for people ready to build together.",
+      title: "Vetted Arab expertise, by the hour.",
+      description: "Vetted Arab experts, booked by the hour.",
       images: [`${origin}/og-kufuo-mark.png`],
     },
   };

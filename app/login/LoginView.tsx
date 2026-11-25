@@ -15,9 +15,9 @@ type AuthAvailability = { google: boolean; linkedin: boolean; phone: boolean; lo
 const copy = {
   en: {
     title: "Welcome to Kufuo",
-    subtitle: "Meet people who are ready to build with the same level of intent.",
+    subtitle: "Vetted Arab experts, booked by the hour.",
     signupTitle: "Create your Kufuo account",
-    signupSubtitle: "Create a profile that makes your skills, goals, and working preferences clear.",
+    signupSubtitle: "Create an account to apply as an expert or to hire experts for your company.",
     google: "Continue with Google",
     linkedin: "Continue with LinkedIn",
     or: "or continue with",
@@ -50,9 +50,9 @@ const copy = {
   },
   ar: {
     title: "حيّاك في كفو",
-    subtitle: "تعرّف على أشخاص مستعدين يبنون بنفس الجدية.",
+    subtitle: "خبراء عرب موثّقون، تحجز ساعاتهم حسب حاجتك.",
     signupTitle: "أنشئ حسابك في كفو",
-    signupSubtitle: "أنشئ ملفًا يوضّح مهاراتك وأهدافك وطريقتك في العمل.",
+    signupSubtitle: "أنشئ حسابك عشان تقدّم كخبير، أو توظّف خبراء لشركتك.",
     google: "المتابعة عبر Google",
     linkedin: "المتابعة عبر LinkedIn",
     or: "أو تابع باستخدام",
@@ -129,19 +129,8 @@ export function LoginView() {
   }, []);
 
   function destination() {
-    const value = new URLSearchParams(window.location.search).get("returnTo") ?? "/dashboard";
-    return value.startsWith("/") ? value : "/dashboard";
-  }
-
-  async function destinationAfterAuthentication(supabase: ReturnType<typeof createClient>) {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return destination();
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("onboarding_complete")
-      .eq("id", user.id)
-      .maybeSingle();
-    return profile?.onboarding_complete ? destination() : "/onboarding";
+    const value = new URLSearchParams(window.location.search).get("returnTo") ?? "/home";
+    return value.startsWith("/") && !value.startsWith("//") ? value : "/home";
   }
 
   async function social(provider: "google" | "linkedin_oidc") {
@@ -172,7 +161,7 @@ export function LoginView() {
         ? await supabase.auth.verifyOtp({ email: identifier.trim(), token: code.trim(), type: "email" })
         : await supabase.auth.verifyOtp({ phone: normalizePhone(identifier), token: code.trim(), type: "sms" });
       if (result.error) setMessage(result.error.message);
-      else window.location.assign(await destinationAfterAuthentication(supabase));
+      else window.location.assign(destination());
       setBusy(false);
       return;
     }
@@ -183,7 +172,7 @@ export function LoginView() {
         ? await supabase.auth.signUp(credentials)
         : await supabase.auth.signInWithPassword(credentials);
       if (result.error) setMessage(result.error.message);
-      else if (result.data.session) window.location.assign(await destinationAfterAuthentication(supabase));
+      else if (result.data.session) window.location.assign(destination());
       else setMessage(ar ? "راجع بريدك لتأكيد الحساب." : "Check your email to confirm your account.");
       setBusy(false);
       return;

@@ -3,7 +3,7 @@ import { LoginView } from "./LoginView";
 
 export const metadata: Metadata = {
   title: "Sign in — Kufuo | كفو",
-  description: "Join Kufuo and find someone worthy of building with.",
+  description: "Sign in to Kufuo to apply as an expert or hire vetted Arab experts.",
 };
 
 export default function LoginPage() {

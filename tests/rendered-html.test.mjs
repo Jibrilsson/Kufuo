@@ -14,18 +14,18 @@ async function render(path = "/") {
   );
 }
 
-test("server-renders the Kufuo landing page with real authentication entry points", async () => {
+test("server-renders the expert network landing page with sign-up entry points", async () => {
   const response = await render();
   assert.equal(response.status, 200);
   assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
 
   const html = await response.text();
-  assert.match(html, /<title>Kufuo \| كفو — Find someone worthy of building with<\/title>/i);
-  assert.match(html, /href="\/login\?returnTo=%2Fdashboard"[^>]*>Log in<\/a>/i);
-  assert.match(html, /href="\/login\?mode=signup&amp;returnTo=%2Faccount"[^>]*>Join the community<\/a>/i);
+  assert.match(html, /<title>Kufuo \| كفو — Vetted Arab experts, by the hour<\/title>/i);
   assert.match(html, /src="\/kufuo-logo\.svg"/i);
-  assert.match(html, /Find the right person to build what comes next\./i);
-  assert.doesNotMatch(html, /Saudi|السعود/i);
+  assert.match(html, /Vetted Arab expertise, by the hour\./i);
+  assert.match(html, /href="\/login\?mode=signup&amp;returnTo=%2Fapply"/i);
+  assert.match(html, /id="request"/i);
+  assert.doesNotMatch(html, /Mercor|cofounder/i);
   assert.doesNotMatch(html, /Your site is taking shape|Building your site/i);
 });
 
@@ -34,53 +34,42 @@ test("mirrors forward chevrons throughout RTL interfaces", async () => {
   assert.match(styles, /\[dir=["']rtl["']\]\s+\.lucide-chevron-right\s*\{[^}]*transform:\s*scaleX\(-1\)/i);
 });
 
-test("keeps the home auth state in sync and pins OAuth redirects to Kufuo", async () => {
-  const [home, login, callback, config] = await Promise.all([
-    readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
+test("routes signed-in people by role and pins OAuth redirects to Kufuo", async () => {
+  const [login, callback, config, session] = await Promise.all([
     readFile(new URL("../app/login/LoginView.tsx", import.meta.url), "utf8"),
     readFile(new URL("../app/auth/callback/route.ts", import.meta.url), "utf8"),
     readFile(new URL("../app/lib/supabase/config.ts", import.meta.url), "utf8"),
+    readFile(new URL("../app/lib/kufuo/session.ts", import.meta.url), "utf8"),
   ]);
-
-  assert.match(home, /supabase\.auth\.getUser\(\)/);
-  assert.match(home, /supabase\.auth\.onAuthStateChange/);
-  assert.match(home, /signedIn \? "\/account"/);
-  assert.match(home, /signedIn \? "\/dashboard"/);
   assert.match(login, /authRedirectOrigin\(window\.location\.origin\)/);
   assert.match(callback, /authRedirectOrigin\(url\.origin\)/);
   assert.match(config, /NEXT_PUBLIC_SITE_URL \?\? "https:\/\/kufuo\.com"/);
+  assert.match(session, /if \(role === "admin"\) return "\/admin"/);
+  assert.match(session, /if \(role === "company"\) return "\/company"/);
+  assert.match(session, /if \(role === "expert"\) return "\/expert"/);
 });
 
-test("ships the protected product routes and RLS-backed core data model", async () => {
+test("ships the expert, company and admin routes and the RLS-backed schema", async () => {
   const requiredRoutes = [
-    "../app/dashboard/page.tsx",
-    "../app/account/page.tsx",
-    "../app/discover/page.tsx",
-    "../app/messages/page.tsx",
-    "../app/connections/page.tsx",
-    "../app/notifications/page.tsx",
-    "../app/settings/page.tsx",
-    "../app/ideas/new/page.tsx",
+    "../app/home/page.tsx",
+    "../app/start/page.tsx",
+    "../app/apply/page.tsx",
+    "../app/expert/page.tsx",
+    "../app/company/page.tsx",
+    "../app/company/new/page.tsx",
+    "../app/admin/page.tsx",
     "../app/privacy/page.tsx",
     "../app/terms/page.tsx",
     "../app/community-guidelines/page.tsx",
   ];
   await Promise.all(requiredRoutes.map((route) => access(new URL(route, import.meta.url))));
 
-  const [migration, grants, client] = await Promise.all([
-    readFile(new URL("../supabase/migrations/20260810152329_kufuo_core_mvp.sql", import.meta.url), "utf8"),
-    readFile(new URL("../supabase/migrations/20260810161000_restrict_member_updates.sql", import.meta.url), "utf8"),
-    readFile(new URL("../app/lib/kufuo/client.ts", import.meta.url), "utf8"),
-  ]);
-
-  for (const table of ["ideas", "connection_requests", "conversations", "messages", "posts", "notifications", "reports"]) {
-    assert.match(migration, new RegExp(`create table(?: if not exists)? public\\.${table}\\b`, "i"));
-    assert.match(migration, new RegExp(`['\"]${table}['\"]`, "i"));
+  const migration = await readFile(new URL("../supabase/migrations/20261125184303_expert_network_core.sql", import.meta.url), "utf8");
+  for (const table of ["experts", "interviews", "interview_results", "companies", "company_requests", "bookings", "booking_company_terms", "booking_expert_terms", "time_entries", "invoices", "payouts", "audit_log"]) {
+    assert.match(migration, new RegExp(`create table public\\.${table}\\b`, "i"));
+    assert.match(migration, new RegExp(`'${table}'`, "i"));
   }
   assert.match(migration, /execute format\('alter table public\.%I enable row level security'/i);
-  assert.match(grants, /grant update \(status, responded_at\) on table public\.connection_requests to authenticated/i);
-  assert.match(grants, /grant update \(read_at\) on table public\.messages to authenticated/i);
-  assert.match(client, /export async function loadDiscovery/);
-  assert.match(client, /export async function sendConversationMessage/);
-  assert.match(client, /export async function publishPost/);
+  assert.match(migration, /Experts can only accept or decline a booking/);
+  assert.match(migration, /Companies can only approve or dispute hours/);
 });
